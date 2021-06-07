@@ -1,8 +1,10 @@
 class UnspentTxOut {
-    constructor(txOutId, address, sender, receiver, amount) {
+    constructor(txOutId, txOutIndex, address, amount) {
         this.txOutId = txOutId;
+        this.txOutIndex = txOutIndex;
         this.address = address;
         this.amount = amount;
+        this.inPool = false;
     }
 }
 

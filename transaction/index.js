@@ -1,15 +1,12 @@
 import { hash } from '../utils/commonUtils';
-import TxIn from './TxIn';
-import TxOut from './TxOut';
 
 class Transaction {
-    constructor(id, txIns, txOuts, senderName, receiverName) {
-        this.id = id;
+    constructor(senderAddress, txIns, txOuts) {
+        this.id = null;
+        this.senderAddress = senderAddress;
         this.txIns = txIns;
         this.txOuts = txOuts;
         this.timestamp = Date.now();
-        this.senderName = senderName;
-        this.receiverName = receiverName;
     }
 
     hashData() {
