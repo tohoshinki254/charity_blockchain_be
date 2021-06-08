@@ -9,7 +9,7 @@ class Transaction {
         this.timestamp = Date.now();
     }
 
-    hashData() {
+    hashData = () => {
         const txInContent = transaction.txIns
             .map((txIn) => txIn.txOutId + txIn.txOutIndex)
             .reduce((a, b) => a + b, '');

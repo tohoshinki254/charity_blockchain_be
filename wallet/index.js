@@ -45,12 +45,16 @@ class Wallet {
 
         if (includedTxOuts !== null && remainAmount !== null) {
             const txOut = new TxOut(receiptAddress, amount);
+            const txRemain = null;
+            if (remainAmount > 0) {
+                txRemain = new TxOut(this.address, remainAmount);
+            }
             const txIns = includedTxOuts.map((unspentTxOut) => {
                 const txIn = new TxIn(unspentTxOut.txOutId, unspentTxOut.txOutIndex, null);
                 return txIn;
             });
 
-            const transaction = new Transaction(this.address, txIns, [txOut]);
+            const transaction = new Transaction(this.address, txIns, [txOut, txRemain]);
 
             return transaction;
         } else {

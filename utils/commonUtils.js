@@ -26,3 +26,15 @@ export const verifyUnspentTxOut = (id, address, unspentTxOuts) => {
     }
     return false;
 };
+
+export const verifySignature = (publicKey, signature, dataHash) => {
+    return ec.keyFromPublic(publicKey, "hex").verify(dataHash, signature);
+};
+
+export const verifyTransaction = (publicKey, transaction) => {
+    transaction.txIns.forEach((txIn) => {
+        if (!verifySignature(publicKey, txIn.signature, transaction.hashData())) {
+            return false;
+        }
+    });
+};
