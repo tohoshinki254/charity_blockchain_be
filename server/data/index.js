@@ -7,6 +7,14 @@ const _unspentTxOuts = new Map();
 
 const _pool = new Pool();
 
+const _event = [];
+
+const _numUser = 0;
+
+export const event = _event;
+
+export const numUser = _numUser;
+
 export const blockchain = _blockchain;
 
 export const unspentTxOuts = _unspentTxOuts;    
