@@ -1,4 +1,4 @@
-import { generateKeyPair } from '../../utils/commonUtils';
+import { generateKeyPair, getKeyPairFromPrivateKey } from '../../utils/commonUtils';
 import { blockchain, unspentTxOuts, pool, event } from '../data/index';
 import fs from 'fs';
 
@@ -19,6 +19,28 @@ module.exports = {
         res.download(process.env.PRIVATE_KEY_PATH);
     },
 
+    accessWallet: (req, res, next) => {
+        try {
+            const privateKey = req.query.privateKey;
+            if (privateKey === undefined || (privateKey.match('^[a-fA-F0-9]+$') === null)) {
+                return res.status(400).json({
+                    "message": "private key not found or invalid"
+                })
+            }
+            // const keyPair = getKeyPairFromPrivateKey(privateKey);
+            fs.writeFileSync(process.env.PRIVATE_KEY_PATH, privateKey);
+            res.download(process.env.PRIVATE_KEY_PATH);
+            // re
+        }
+        catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
+       
+
+    },
+
     getWalletInfo: (req, res, next) => {
         const wallet = req.myWallet;
         return res.status(200).json({
@@ -28,6 +50,22 @@ module.exports = {
                 balance: wallet.getBalance(unspentTxOuts)
             }
         });
+    },
+
+    addMoneyToWallet: (req, res, next) => {
+        try {
+            const money = req.money;
+            const block = generateNextBlock()
+
+        }
+        catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
+
+
+
     },
 
     createEvent: (req, res, next) => {
@@ -56,5 +94,8 @@ module.exports = {
                 message: e.message
             });
         }
+    
     }
+
+    
 }
