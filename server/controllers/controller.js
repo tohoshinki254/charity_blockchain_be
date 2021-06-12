@@ -148,12 +148,37 @@ module.exports = {
     getTransactionsByPrivateKey: (req, res, next) => {
         try {
             const wallet = req.wallet;
-            const transactions = getMyTransactions(wallet.address, blockchain);
+            const transactions = getMyTransactions(wallet.address, blockchain.chain);
             res.status(200).json({
                 message: 'OK',
                 payload: {
                     transactions
                 }
+            })
+        }
+        catch(e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    },
+
+    getBlockByIndex: (req, res, next) => {
+        try {
+            let index = req.query.index;
+
+            index = Number.parseInt(index);
+            if (!Number.isInteger(amount) || amount < 0 || amount >= blockchain.chain.length) {
+                res.status(400).json({
+                    message: 'Invalid index.'
+                });
+                return;
+            }
+            const block = blockchain.chain[index];
+
+            return res.status(200).json({
+                message: 'OK',
+                payload: block
             })
         }
         catch(e) {
