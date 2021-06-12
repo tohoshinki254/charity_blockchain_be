@@ -145,6 +145,24 @@ module.exports = {
         }
     },
 
+    getTransactionsByPrivateKey: (req, res, next) => {
+        try {
+            const wallet = req.wallet;
+            const transactions = getMyTransactions(wallet.address, blockchain);
+            res.status(200).json({
+                message: 'OK',
+                payload: {
+                    transactions
+                }
+            })
+        }
+        catch(e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    },
+
     getTransactionInPool: (req, res, next) => {
         try {
             const payload = pool.transactions.map((transaction) => {

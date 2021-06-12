@@ -2,6 +2,7 @@ import { SUCCESS_TRANSACTION, WAITING_CONFIRM } from "./constants";
 import SHA256 from 'crypto-js/sha256';
 import { v1 as uuidv1 } from 'uuid';
 import { ec as EC } from 'elliptic';
+import Transaction from "../transaction";
 
 const ec = new EC("secp256k1");
 
@@ -71,3 +72,23 @@ export const convertTransactionInPool = (txsInPool) => {
         status: WAITING_CONFIRM
     }));
 };
+
+export const getMyTransactions = (publicKey, chain) => {
+    let results = [];
+    chain.forEach(block => {
+        const transactions = block.data
+            .filter(tx => tx.senderAddress === publicKey)
+            .map(tx => ({
+                senderAddress: tx.senderAddress,
+                receiverAddress: tx.txOuts[0].address,
+                amount: tx.txOuts[0].amount,
+                timeStamp: tx.timeStamp,
+                id: tx.hashData(),
+                block: block.index,
+                status: SUCCESS_TRANSACTION
+            }));
+
+        results = [...results, ...transactions];
+    });
+    return results;
+}
