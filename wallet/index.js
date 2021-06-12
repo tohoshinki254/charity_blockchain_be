@@ -9,6 +9,10 @@ class Wallet {
         this.address = this.keyPair.getPublic().encode("hex", false);
     }
 
+    getAddress = () => {
+        return this.address;
+    }
+
     getBalance = (unspentTxOuts) => {
         let balance = 0;
 

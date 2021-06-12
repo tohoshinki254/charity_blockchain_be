@@ -11,6 +11,10 @@ const _event = [];
 
 const _numUser = 0;
 
+const _accountMap = new Map();
+
+export const accountMap = _accountMap;
+
 export const event = _event;
 
 export const numUser = _numUser;

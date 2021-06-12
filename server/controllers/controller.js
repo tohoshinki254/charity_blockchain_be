@@ -1,6 +1,6 @@
-import { generateKeyPair, getKeyPairFromPrivateKey } from '../../utils/commonUtils';
-import { blockchain, unspentTxOuts, pool, event } from '../data/index';
-import fs from 'fs';
+import { convertTransactionFromChain, convertTransactionInPool, generateKeyPair } from '../../utils/commonUtils';
+import { blockchain, unspentTxOuts, pool, event, accountMap } from '../data/index';
+import { Wallet } from '../../wallet/index';
 
 module.exports = {
     getBlocks: (req, res, next) => {
@@ -13,10 +13,16 @@ module.exports = {
     createWallet: (req, res, next) => {
         const keyPair = generateKeyPair();
         const privateKey = keyPair.getPrivate.toString(16);
+        const address = keyPair.getPublic().encode("hex", false);
 
-        fs.writeFileSync(process.env.PRIVATE_KEY_PATH, privateKey);
-
-        res.download(process.env.PRIVATE_KEY_PATH);
+        accountMap.set(privateKey, new Wallet(privateKey));
+        res.status(200).json({
+            message: 'OK',
+            payload: {
+                privateKey: privateKey,
+                address: address
+            }
+        });
     },
 
     accessWallet: (req, res, next) => {
@@ -27,46 +33,55 @@ module.exports = {
                     "message": "private key not found or invalid"
                 })
             }
-            // const keyPair = getKeyPairFromPrivateKey(privateKey);
-            fs.writeFileSync(process.env.PRIVATE_KEY_PATH, privateKey);
-            res.download(process.env.PRIVATE_KEY_PATH);
-            // re
+            
+            for (let [key, val] of accountMap) {
+                if (privateKey === key) {
+                    res.status(200).json({
+                        message: 'OK'
+                    });
+                    return;
+                }
+            }
+
+            res.status(400).json({
+                message: 'private key not found'
+            });
         }
         catch (e) {
             res.status(500).json({
                 message: e.message
             })
         }
-       
-
     },
 
     getWalletInfo: (req, res, next) => {
-        const wallet = req.myWallet;
+        const privateKey = req.query.privateKey;
+        const wallet = accountMap.get(privateKey);
+
         return res.status(200).json({
             message: 'OK',
             payload: {
-                address: wallet.address,
+                address: wallet.getAddress(),
                 balance: wallet.getBalance(unspentTxOuts)
             }
         });
     },
 
-    addMoneyToWallet: (req, res, next) => {
-        try {
-            const money = req.money;
-            const block = generateNextBlock()
+    // addMoneyToWallet: (req, res, next) => {
+    //     try {
+    //         const money = req.money;
+    //         const block = generateNextBlock()
 
-        }
-        catch (e) {
-            res.status(500).json({
-                message: e.message
-            })
-        }
+    //     }
+    //     catch (e) {
+    //         res.status(500).json({
+    //             message: e.message
+    //         })
+    //     }
 
 
 
-    },
+    // },
 
     createEvent: (req, res, next) => {
         try {
@@ -94,8 +109,81 @@ module.exports = {
                 message: e.message
             });
         }
-    
-    }
+    },
 
-    
+    createTransaction: (req, res, next) => {
+        try {
+            let { senderPrivate, receiptAddress, amount } = req.body;
+            if (!receiptAddress || !amount) {
+                res.status(400).json({
+                    message: 'receipt address or amount are not found.'
+                });
+                return;
+            }
+
+            amount = Number.parseInt(amount);
+            if (isNaN(amount)) {
+                res.status(400).json({
+                    message: 'amount must be a number.'
+                });
+                return;
+            }
+
+            const wallet = accountMap.get(privateKey);
+            const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts);
+            wallet.signTransaction(transaction);
+
+            pool.addTransaction(transaction, unspentTxOuts);
+
+            res.status(200).json({
+                message: 'OK'
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    },
+
+    getTransactionInPool: (req, res, next) => {
+        try {
+            const payload = pool.transactions.map((transaction) => {
+                return {
+                    sender: transaction.senderAddress,
+                    receipt: transaction.txOuts[0].address,
+                    amount: transaction.txOuts[0].amount
+                }
+            });
+
+            res.status(200).json({
+                message: 'OK',
+                payload
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    },
+
+    getHistory: (req, res, next) => {
+        try {
+            const blocks = blockchain.chain;
+            const transactions = [...convertTransactionFromChain(blocks), ...convertTransactionInPool(pool.transactions)];
+
+            res.status(200).json({
+                message: 'OK',
+                payload: {
+                    blocks,
+                    transactions
+                }
+            }); 
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    },
+
+
 }

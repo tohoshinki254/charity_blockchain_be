@@ -1,0 +1,2 @@
+export const SUCCESS_TRANSACTION = 1712799
+export const WAITING_CONFIRM = 1712813
