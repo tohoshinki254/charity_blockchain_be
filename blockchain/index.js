@@ -1,5 +1,5 @@
-import * as blockUtil from "../utils/blockUtils";
-import { isValidChain } from '../utils/chainUtils';
+const blockUtil = require("../utils/blockUtils"); 
+const { isValidChain } = require('../utils/chainUtils');
 
 class Blockchain {
     constructor() {
@@ -30,4 +30,4 @@ class Blockchain {
     }
 }
 
-export default Blockchain;
+module.exports = Blockchain;

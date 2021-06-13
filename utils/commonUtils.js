@@ -1,39 +1,38 @@
-import { SUCCESS_TRANSACTION, WAITING_CONFIRM } from "./constants";
-import SHA256 from 'crypto-js/sha256';
-import { v1 as uuidv1 } from 'uuid';
-import { ec as EC } from 'elliptic';
-import Transaction from "../transaction";
+const { SUCCESS_TRANSACTION, WAITING_CONFIRM } = require("./constants");
+const SHA256 = require('crypto-js/sha256');
+const uuidv1 = require('uuid').v1;
+const EC = require('elliptic').ec;
 
 const ec = new EC("secp256k1");
 
-export const hash = (data) => {
+const hash = (data) => {
     return SHA256(data).toString();
 };
 
-export const generateId = () => {
+const generateId = () => {
     return uuidv1();
 };
 
-export const generateKeyPair = () => {
+const generateKeyPair = () => {
     return ec.genKeyPair();
 };
 
-export const getKeyPairFromPrivateKey = (privateKey) => {
+const getKeyPairFromPrivateKey = (privateKey) => {
     return ec.keyFromPrivate(privateKey, "hex");
 };
 
-export const verifyUnspentTxOut = (id, address, unspentTxOuts) => {
-    if (unspentTxOuts.get(id)?.address === address) {
+const verifyUnspentTxOut = (id, address, unspentTxOuts) => {
+    if (unspentTxOuts.get(id).address === address) {
         return true;
     }
     return false;
 };
 
-export const verifySignature = (publicKey, signature, dataHash) => {
+const verifySignature = (publicKey, signature, dataHash) => {
     return ec.keyFromPublic(publicKey, "hex").verify(dataHash, signature);
 };
 
-export const verifyTransaction = (publicKey, transaction) => {
+const verifyTransaction = (publicKey, transaction) => {
     transaction.txIns.forEach((txIn) => {
         if (!verifySignature(publicKey, txIn.signature, transaction.hashData())) {
             return false;
@@ -41,7 +40,7 @@ export const verifyTransaction = (publicKey, transaction) => {
     });
 };
 
-export const convertTransactionFromChain = (chain) => {
+const convertTransactionFromChain = (chain) => {
     let result = [];
 
     chain.forEach((block) => {
@@ -61,7 +60,7 @@ export const convertTransactionFromChain = (chain) => {
     return result;
 };
 
-export const convertTransactionInPool = (txsInPool) => {
+const convertTransactionInPool = (txsInPool) => {
     return txsInPool.map((tx) => ({
         senderAddress: tx.senderAddress,
         receiptAddress: tx.txOuts[0].address,
@@ -73,7 +72,7 @@ export const convertTransactionInPool = (txsInPool) => {
     }));
 };
 
-export const getMyTransactions = (publicKey, chain) => {
+const getMyTransactions = (publicKey, chain) => {
     let results = [];
     chain.forEach(block => {
         const transactions = block.data
@@ -92,3 +91,16 @@ export const getMyTransactions = (publicKey, chain) => {
     });
     return results;
 }
+
+module.exports = {
+    hash,
+    generateId,
+    generateKeyPair,
+    getKeyPairFromPrivateKey,
+    verifyUnspentTxOut,
+    verifySignature,
+    verifyTransaction,
+    convertTransactionFromChain,
+    convertTransactionInPool,
+    getMyTransactions,
+};

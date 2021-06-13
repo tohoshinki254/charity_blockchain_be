@@ -1,7 +1,7 @@
-import { getKeyPairFromPrivateKey, verifyUnspentTxOut } from "../utils/commonUtils";
-import TxIn from '../transaction/TxIn';
-import TxOut from '../transaction/TxOut';
-import Transaction from '../transaction/index';
+const { getKeyPairFromPrivateKey, verifyUnspentTxOut } = require("../utils/commonUtils");
+const TxIn = require('../transaction/TxIn');
+const TxOut = require('../transaction/TxOut');
+const Transaction = require('../transaction/index');
 
 class Wallet {
     construct(privateKey) {
@@ -71,7 +71,7 @@ class Wallet {
             throw new Error('Transaction address is not match.');
         }
 
-        transaction.txIns?.forEach((txIn) => {
+        transaction.txIns.forEach((txIn) => {
             if (!verifyUnspentTxOut(txIn.txOutId, this.address, unspentTxOuts)) {
                 throw new Error('Transaction address is not match.');
             }
@@ -81,4 +81,4 @@ class Wallet {
     }
 }
 
-export default Wallet;
+module.exports = Wallet;

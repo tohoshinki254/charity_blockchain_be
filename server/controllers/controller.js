@@ -1,6 +1,6 @@
-import { convertTransactionFromChain, convertTransactionInPool, generateKeyPair } from '../../utils/commonUtils';
-import { blockchain, unspentTxOuts, pool, event, accountMap } from '../data/index';
-import { Wallet } from '../../wallet/index';
+const { convertTransactionFromChain, convertTransactionInPool, generateKeyPair } = require('../../utils/commonUtils');
+const { blockchain, unspentTxOuts, pool, event, accountMap } = require('../data/index');
+const { Wallet } = require('../../wallet/index');
 
 module.exports = {
     getBlocks: (req, res, next) => {
@@ -27,7 +27,7 @@ module.exports = {
 
     accessWallet: (req, res, next) => {
         try {
-            const privateKey = req.query.privateKey;
+            const privateKey = req.body.privateKey;
             if (privateKey === undefined || (privateKey.match('^[a-fA-F0-9]+$') === null)) {
                 return res.status(400).json({
                     "message": "private key not found or invalid"
@@ -55,7 +55,7 @@ module.exports = {
     },
 
     getWalletInfo: (req, res, next) => {
-        const privateKey = req.query.privateKey;
+        const privateKey = req.body.privateKey;
         const wallet = accountMap.get(privateKey);
 
         return res.status(200).json({
@@ -129,11 +129,17 @@ module.exports = {
                 return;
             }
 
-            const wallet = accountMap.get(privateKey);
+            const wallet = accountMap.get(senderPrivate);
             const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts);
             wallet.signTransaction(transaction);
 
             pool.addTransaction(transaction, unspentTxOuts);
+
+            const validTransactions = pool.getValidTransaction();
+            if (validTransactions.length >= 10) {
+                const newBlock = blockchain.addBlock(validTransactions);
+                pool.clearTransaction(unspentTxOuts);
+            }
 
             res.status(200).json({
                 message: 'OK'
@@ -147,8 +153,8 @@ module.exports = {
 
     getTransactionsByPrivateKey: (req, res, next) => {
         try {
-            const wallet = req.wallet;
-            const transactions = getMyTransactions(wallet.address, blockchain.chain);
+            const address = req.query.address;
+            const transactions = getMyTransactions(address, blockchain.chain);
             res.status(200).json({
                 message: 'OK',
                 payload: {
@@ -226,7 +232,5 @@ module.exports = {
                 message: e.message
             });
         }
-    },
-
-
+    },  
 }

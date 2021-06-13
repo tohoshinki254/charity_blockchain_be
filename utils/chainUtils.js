@@ -1,6 +1,6 @@
-import { createGenesisBlock, hashBlock } from './blockUtils';
+const { createGenesisBlock, hashBlock } = require('./blockUtils');
 
-export const isValidChain = (chain) => {
+const isValidChain = (chain) => {
     if (chain && JSON.stringify(chain[0]) != JSON.stringify(createGenesisBlock())) {
         return false;
     }
@@ -15,3 +15,5 @@ export const isValidChain = (chain) => {
     }
     return true;
 }
+
+module.exports = { isValidChain };

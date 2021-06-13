@@ -1,4 +1,4 @@
-import { hash } from '../utils/commonUtils';
+const { hash } = require('../utils/commonUtils');
 
 class Transaction {
     constructor(senderAddress, txIns, txOuts) {
@@ -22,4 +22,4 @@ class Transaction {
     }
 }   
 
-export default Transaction;
+module.exports = Transaction;

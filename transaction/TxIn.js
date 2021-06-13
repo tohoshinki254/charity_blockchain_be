@@ -1,5 +1,3 @@
-import { ec as EC } from 'elliptic';
-
 class TxIn {
     constructor(txOutId, txOutIndex, signature) {
         this.txOutId = txOutId;
@@ -8,4 +6,4 @@ class TxIn {
     }
 }
 
-export default TxIn;
+module.exports = TxIn;

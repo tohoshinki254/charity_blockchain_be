@@ -5,4 +5,4 @@ class TxOut {
     }
 }
 
-export default TxOut;
+module.exports = TxOut;

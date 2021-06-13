@@ -1,5 +1,5 @@
-import { generateId, verifyTransaction } from '../utils/commonUtils';
-import UnspentTxOut from './UnspentTxOut';
+const { generateId, verifyTransaction } = require('../utils/commonUtils');
+const UnspentTxOut = require('./UnspentTxOut');
 
 class Pool {
     constructor() {
@@ -59,4 +59,4 @@ class Pool {
     }
 }
 
-export default Pool;
+module.exports = Pool;

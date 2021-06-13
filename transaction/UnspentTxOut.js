@@ -8,4 +8,4 @@ class UnspentTxOut {
     }
 }
 
-export default UnspentTxOut;
+module.exports = UnspentTxOut;

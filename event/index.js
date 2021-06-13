@@ -1,4 +1,4 @@
-import { event, numUser } from "../server/data/index";
+const { event, numUser } = require("../server/data/index");
 
 class Event {
     constructor(address, name, description, creator, startDate, endDate) {
@@ -40,4 +40,4 @@ class Event {
     }
 }
 
-export default Event;
+module.exports = Event;
