@@ -4,7 +4,7 @@ const TxOut = require('../transaction/TxOut');
 const Transaction = require('../transaction/index');
 
 class Wallet {
-    construct(privateKey) {
+    constructor(privateKey) {
         this.keyPair = getKeyPairFromPrivateKey(privateKey);
         this.address = this.keyPair.getPublic().encode("hex", false);
     }

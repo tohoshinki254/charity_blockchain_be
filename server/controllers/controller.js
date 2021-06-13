@@ -1,6 +1,6 @@
 const { convertTransactionFromChain, convertTransactionInPool, generateKeyPair } = require('../../utils/commonUtils');
 const { blockchain, unspentTxOuts, pool, event, accountMap } = require('../data/index');
-const { Wallet } = require('../../wallet/index');
+const Wallet = require('../../wallet');
 
 module.exports = {
     getBlocks: (req, res, next) => {
@@ -12,7 +12,7 @@ module.exports = {
 
     createWallet: (req, res, next) => {
         const keyPair = generateKeyPair();
-        const privateKey = keyPair.getPrivate.toString(16);
+        const privateKey = keyPair.getPrivate().toString(16);
         const address = keyPair.getPublic().encode("hex", false);
 
         accountMap.set(privateKey, new Wallet(privateKey));
