@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/controller');
+const { authenticate } = require('../middlewares/authenticate');
 
 router.get('/', (req, res, next) => {
   res.render('index', { title: 'Charity Block BE' });
@@ -17,24 +18,24 @@ router.post('/wallet', (req, res, next) => {
 });
 
 // access wallet
-// [body] privateKey
-router.post('/wallet-access', (req, res, next) => {
+// [headers] authorization: privateKey
+router.post('/wallet-access', authenticate, (req, res, next) => {
   controller.accessWallet(req, res, next);
 });
 
 // get wallet information
-// [body] privateKey
-router.post('/wallet', (req, res, next) => {
+// [headers] authorization: privateKey
+router.post('/wallet', authenticate, (req, res, next) => {
   controller.getWalletInfo(req, res, next);
 });
 
 // create transaction
+// [headers] authorization: privateKey
 // [body] {
-//    senderPrivate: privateKey of sender
 //    receiptAddress: address of receipt
 //    amount: amount
 // }
-router.post('/transaction', (req, res, next) => {
+router.post('/transaction', authenticate, (req, res, next) => {
   controller.createTransaction(req, res, next);
 });
 

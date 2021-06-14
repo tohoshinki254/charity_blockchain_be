@@ -27,24 +27,16 @@ module.exports = {
 
     accessWallet: (req, res, next) => {
         try {
-            const privateKey = req.body.privateKey;
-            if (privateKey === undefined || (privateKey.match('^[a-fA-F0-9]+$') === null)) {
-                return res.status(400).json({
-                    "message": "private key not found or invalid"
-                })
-            }
-            
-            for (let [key, val] of accountMap) {
-                if (privateKey === key) {
-                    res.status(200).json({
-                        message: 'OK'
-                    });
-                    return;
-                }
+            const wallet = req.myWallet;
+            if (wallet === null) {
+                res.status(401).json({
+                    message: 'wallet not found'
+                });
+                return;
             }
 
-            res.status(400).json({
-                message: 'private key not found'
+            res.status(200).json({
+                message: 'OK'
             });
         }
         catch (e) {
@@ -55,8 +47,7 @@ module.exports = {
     },
 
     getWalletInfo: (req, res, next) => {
-        const privateKey = req.body.privateKey;
-        const wallet = accountMap.get(privateKey);
+        const wallet = req.myWallet;
 
         return res.status(200).json({
             message: 'OK',
@@ -113,7 +104,8 @@ module.exports = {
 
     createTransaction: (req, res, next) => {
         try {
-            let { senderPrivate, receiptAddress, amount } = req.body;
+            let { receiptAddress, amount } = req.body;
+            const wallet = req.myWallet;
             if (!receiptAddress || !amount) {
                 res.status(400).json({
                     message: 'receipt address or amount are not found.'
@@ -129,7 +121,6 @@ module.exports = {
                 return;
             }
 
-            const wallet = accountMap.get(senderPrivate);
             const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts);
             wallet.signTransaction(transaction);
 
