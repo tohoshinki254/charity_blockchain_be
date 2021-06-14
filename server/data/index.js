@@ -7,7 +7,7 @@ const _unspentTxOuts = new Map();
 
 const _pool = new Pool();
 
-const _event = [];
+const _event = new Map();
 
 const _numUser = 0;
 

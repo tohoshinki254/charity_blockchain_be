@@ -2,6 +2,7 @@ const { SUCCESS_TRANSACTION, WAITING_CONFIRM } = require("./constants");
 const SHA256 = require('crypto-js/sha256');
 const uuidv1 = require('uuid').v1;
 const EC = require('elliptic').ec;
+const { event } = require('../server/data/index');
 
 const ec = new EC("secp256k1");
 
@@ -51,7 +52,8 @@ const convertTransactionFromChain = (chain) => {
             timeStamp: tx.timeStamp,
             id: tx.hashData(),
             block: block.index,
-            status: SUCCESS_TRANSACTION
+            status: SUCCESS_TRANSACTION,
+            nameEvent: event.get(tx.txOuts[0].address).name,
         }));
 
         result = [...result, ...transactions];
@@ -68,7 +70,8 @@ const convertTransactionInPool = (txsInPool) => {
         timeStamp: tx.timeStamp,
         id: tx.hashData(),
         block: "N/A",
-        status: WAITING_CONFIRM
+        status: WAITING_CONFIRM,
+        nameEvent: event.get(tx.txOuts[0].address).name,
     }));
 };
 
@@ -84,7 +87,8 @@ const getMyTransactions = (publicKey, chain) => {
                 timeStamp: tx.timeStamp,
                 id: tx.hashData(),
                 block: block.index,
-                status: SUCCESS_TRANSACTION
+                status: SUCCESS_TRANSACTION,
+                nameEvent: event.get(tx.txOuts[0].address).name
             }));
 
         results = [...results, ...transactions];

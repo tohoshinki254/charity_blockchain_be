@@ -4,9 +4,10 @@ const TxOut = require('../transaction/TxOut');
 const Transaction = require('../transaction/index');
 
 class Wallet {
-    constructor(privateKey) {
+    constructor(privateKey, name) {
         this.keyPair = getKeyPairFromPrivateKey(privateKey);
         this.address = this.keyPair.getPublic().encode("hex", false);
+        this.name = name;
     }
 
     getAddress = () => {

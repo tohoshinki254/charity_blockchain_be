@@ -1,4 +1,4 @@
-const { convertTransactionFromChain, convertTransactionInPool, generateKeyPair } = require('../../utils/commonUtils');
+const { convertTransactionFromChain, convertTransactionInPool, generateKeyPair, getMyTransactions } = require('../../utils/commonUtils');
 const { blockchain, unspentTxOuts, pool, event, accountMap } = require('../data/index');
 const Wallet = require('../../wallet');
 
@@ -14,8 +14,12 @@ module.exports = {
         const keyPair = generateKeyPair();
         const privateKey = keyPair.getPrivate().toString(16);
         const address = keyPair.getPublic().encode("hex", false);
+        let { name } = req.body;
+        if (name === undefined || name === null) {
+            name = "No Name"
+        }
 
-        accountMap.set(privateKey, new Wallet(privateKey));
+        accountMap.set(privateKey, new Wallet(privateKey, name));
         res.status(200).json({
             message: 'OK',
             payload: {
@@ -79,14 +83,16 @@ module.exports = {
             const keyPair = generateKeyPair();
             const privateKey = keyPair.getPrivate.toString(16);
             const address = keyPair.getPublic().encode("hex", false);
-            const { name, description, creator, startDate, endDate } = req.body;
+            const wallet = req.myWallet;
+            const creator = wallet.keyPair.getPrivate().toString(16);;
+            const { name, description, startDate, endDate } = req.body;
             
             const start = startDate.split("/");
             const end = endDate.split("/");
 
             const newEvent = new Event(address, name, description, creator, 
                 new Date(start[2], start[1], start[0]), new Date(end[2], end[1], end[0]));
-            event.push(newEvent);
+            event.set(address, newEvent);
 
             res.status(200).json({
                 message: 'OK',
@@ -144,14 +150,15 @@ module.exports = {
 
     getTransactionsByPrivateKey: (req, res, next) => {
         try {
-            const address = req.query.address;
-            const transactions = getMyTransactions(address, blockchain.chain);
+            const wallet = req.myWallet;
+            const transactions = getMyTransactions(wallet.address, blockchain.chain);
+
             res.status(200).json({
                 message: 'OK',
                 payload: {
                     transactions
                 }
-            })
+            });
         }
         catch(e) {
             res.status(500).json({
@@ -223,5 +230,50 @@ module.exports = {
                 message: e.message
             });
         }
-    },  
+    },
+
+    getAllEvents: (req, res, next) => {
+        try {
+            let result = [];
+            for (let [key, val] of event) {
+                result.push(val);
+            }
+
+            res.status(200).json({
+                message: 'OK',
+                payload: {
+                    events: result
+                }
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    },
+
+    getEventsByPrivateKey: (req, res, next) => {
+        try {
+            const wallet = req.myWallet;
+            const privateKey = wallet.keyPair.getPrivate().toString(16);
+            
+            let result = [];
+            for (let [key, val] of event) {
+                if (val.creator === privateKey) {
+                    result.push(val);
+                }
+            }
+
+            res.status(200).json({
+                message: 'OK',
+                payload: {
+                    events: result
+                }
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    }
 }
