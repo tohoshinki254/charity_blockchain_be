@@ -108,6 +108,47 @@ module.exports = {
         }
     },
 
+    acceptProject = (req, res, next) => {
+        const projectId = req.body.projectId;
+        const targetEvent = event[projectId];
+
+        const wallet = req.myWallet;
+        const publicKey = wallet.keyPair.getPublic().toString(16);
+
+        if (targetEvent === undefined) {
+            res.status(400).json({
+                message: 'Project id not found'
+            });
+            return;
+        }
+
+        let flag = targetEvent.acceptEvent(publicKey);
+        if (flag === false) {
+            res.status(400).json({
+                message: 'User has accepted before'
+            });
+            return;
+        }
+
+        res.status(200).json({
+            message: 'OK'
+        })
+    },
+
+    getProjectDonateHistory = (req, res, next) => {
+        
+    },
+
+    getProjectDisbursementHistory = (req, res, next) => {
+
+    },
+
+    acceptDisbursement = (req, res, next) => {
+
+    },
+
+
+
     createTransaction: (req, res, next) => {
         try {
             let { receiptAddress, amount } = req.body;

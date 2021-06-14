@@ -7,7 +7,7 @@ class Event {
         this.name = name;
         this.description = description;
         this.status = false;
-        this.numAccepted = 0;
+        this.acceptPeople = new Set();
         this.creator = creator;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -30,13 +30,19 @@ class Event {
         return this.status;
     }
 
-    acceptEvent = () => {
-        this.numAccepted++;
-        if (numUser <= 500) {
-            if (this.numAccepted === 500) this.status = true;
-        } else {
-            if (this.numAccepted * 1.0 / numUser >= 0.9) this.status = true;
+    acceptEvent = (publicKey) => {
+        if (this.acceptPeople.has(publicKey)) {
+            return false;
         }
+
+        this.acceptPeople.add(publicKey);
+        if (numUser <= 500) {
+            if (this.acceptPeople.size === numUser) this.status = true;
+        } else {
+            if (this.acceptPeople.size * 1.0 / numUser >= 0.9) this.status = true;
+        }
+
+        return true;
     }
 }
 
