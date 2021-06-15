@@ -156,7 +156,7 @@ module.exports = {
             })
 
             const ret = history.map(transact => {
-                const moneyReceived = transact.txOuts.find(element => element.address.localeCompare(eventAddress)).amount;
+                const moneyReceived = transact.txOuts.find(element => element.address.localeCompare(eventAddress) === true).amount;
                 return {
                     senderAddress: transact.senderAddress,
                     moneyReceived: moneyReceived,
@@ -167,13 +167,42 @@ module.exports = {
         }
         catch (e) {
             res.status(500).json({
-                message: e.meass
+                message: e.message
             })
         }
     },
 
     getEventDisbursementHistory = (req, res, next) => {
+        try {
+            const eventAddress = req.query.eventAddress;
+            const targetEvent = event.get(eventId);
 
+            if (targetEvent === undefined) {
+                res.status(400).json({
+                    message: 'Event address not found'
+                });
+            }
+
+            const history = pool.filter(transact => {
+                transact.senderAddress.localeCompare(eventAddress) === true;
+            })
+
+            const ret = history.map(transact => {
+                const receiverInfo = transact.txOuts.find(element => element.address.localeCompare(eventAddress) === false);
+                return {
+                    receiverAddress: receiverInfo.address,
+                    moneySent: receiverInfo.amount,
+                    timestamp: transact.timestamp
+                }
+            });
+
+            return ret;
+        }
+        catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
     },
 
     acceptDisbursement = (req, res, next) => {
