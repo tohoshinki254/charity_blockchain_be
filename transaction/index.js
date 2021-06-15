@@ -18,7 +18,8 @@ class Transaction {
             .map((txOut) => txOut.address + txOut.amount)
             .reduce((a, b) => a + b, '');
 
-        return hash(txInContent + txOutContent);
+        this.id = hash(txInContent + txOutContent);
+        return this.id;
     }
 }   
 

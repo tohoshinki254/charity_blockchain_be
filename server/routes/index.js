@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/controller');
-const { authenticate } = require('../middlewares/authenticate');
+const { authenticateWallet, authenticateEvent } = require('../middlewares/authenticate');
 
 router.get('/', (req, res, next) => {
   res.render('index', { title: 'Charity Block BE' });
@@ -20,13 +20,13 @@ router.post('/wallet', (req, res, next) => {
 
 // access wallet
 // [headers] authorization: privateKey
-router.post('/wallet-access', authenticate, (req, res, next) => {
+router.post('/wallet-access', authenticateWallet, (req, res, next) => {
   controller.accessWallet(req, res, next);
 });
 
 // get wallet information
 // [headers] authorization: privateKey
-router.get('/wallet', authenticate, (req, res, next) => {
+router.get('/wallet', authenticateWallet, (req, res, next) => {
   controller.getWalletInfo(req, res, next);
 });
 
@@ -36,7 +36,7 @@ router.get('/wallet', authenticate, (req, res, next) => {
 //    receiptAddress: address of receipt
 //    amount: amount
 // }
-router.post('/transaction', authenticate, (req, res, next) => {
+router.post('/transaction', authenticateWallet, (req, res, next) => {
   controller.createTransaction(req, res, next);
 });
 
@@ -52,7 +52,7 @@ router.get('/history', (req, res, next) => {
 
 // get my transactions
 // [headers] authorization: privateKey
-router.get('/transaction/mine', authenticate, (req, res, next) => {
+router.get('/transaction/mine', authenticateWallet, (req, res, next) => {
   controller.getTransactionsByPrivateKey(req, res, next);
 });
 
@@ -70,13 +70,13 @@ router.get('/blocks/:index', (req, res, next) => {
 //    startDate,
 //    endDate
 // }
-router.post('/event', authenticate, (req, res, next) => {
+router.post('/event', authenticateWallet, (req, res, next) => {
   controller.createEvent(req, res, next);
 });
 
 // get events by private key of creator
 // [headers] authorization: privateKey of creator
-router.get('/event/mine', authenticate, (req, res, next) => {
+router.get('/event/mine', authenticateWallet, (req, res, next) => {
   controller.getEventsByPrivateKey(req, res, next);
 });
 
@@ -85,14 +85,29 @@ router.get('/event', (req, res, next) => {
   controller.getAllEvents(req, res, next);
 });
 
-/**
- * Accept an event
- * [headers] authorization: privateKey of creator
- */
-router.post('/event/accept', authenticate, (req, res, next) => {
+// accept an event
+// [headers] authorization: privateKey of creator
+router.post('/event/accept', authenticateWallet, (req, res, next) => {
   controller.acceptProject(req, res, next);
 });
 
+// get event donate history
+// [query] address: address of event(project)
+router.get('/event/donate', (req, res, next) => {
+  controller.getEventDonateHistory(req, res, next);
+});
 
+// get event disbursement history
+// [query] address: address of event(project)
+router.get('/event/disbursement', (req, res, next) => {
+  controller.getEventDisbursementHistory(req, res, next);
+});
+
+// disbursement
+// [headers] authorization: privateKey of event(project)
+// [body] amount
+router.post('/event/disbursement', (req, res, next) => {
+  controller.disbursement(req, res, next);
+});
 
 module.exports = router;

@@ -108,16 +108,16 @@ module.exports = {
         }
     },
 
-    acceptEvent = (req, res, next) => {
-        const eventId = req.body.projectId;
-        const targetEvent = event[projectId];
+    acceptEvent: (req, res, next) => {
+        const eventId = req.body.address;
+        const targetEvent = event[eventId];
 
         const wallet = req.myWallet;
         const publicKey = wallet.keyPair.getPublic().toString(16);
 
         if (targetEvent === undefined) {
             res.status(400).json({
-                message: 'Project id not found'
+                message: 'event address not found'
             });
             return;
         }
@@ -125,7 +125,7 @@ module.exports = {
         let flag = targetEvent.acceptEvent(publicKey);
         if (flag === false) {
             res.status(400).json({
-                message: 'User has accepted before'
+                message: 'user has accepted before'
             });
             return;
         }
@@ -135,14 +135,14 @@ module.exports = {
         })
     },
 
-    getEventDonateHistory = (req, res, next) => {
+    getEventDonateHistory: (req, res, next) => {
         try {
-            const eventAddress = req.query.eventAddress;
-            const targetEvent = event.get(eventId);
+            const eventAddress = req.query.address;
+            const targetEvent = event.get(eventAddress);
 
             if (targetEvent === undefined) {
                 res.status(400).json({
-                    message: 'Event address not found'
+                    message: 'event address not found'
                 });
             }
 
@@ -172,14 +172,14 @@ module.exports = {
         }
     },
 
-    getEventDisbursementHistory = (req, res, next) => {
+    getEventDisbursementHistory: (req, res, next) => {
         try {
-            const eventAddress = req.query.eventAddress;
-            const targetEvent = event.get(eventId);
+            const eventAddress = req.query.address;
+            const targetEvent = event.get(eventAddress);
 
             if (targetEvent === undefined) {
                 res.status(400).json({
-                    message: 'Event address not found'
+                    message: 'event address not found'
                 });
             }
 
@@ -205,11 +205,39 @@ module.exports = {
         }
     },
 
-    acceptDisbursement = (req, res, next) => {
+    disbursement: (req, res, next) => {
+        try {
+            let { amount } = req.body;
+            const event = req.curEvent;
 
+            amount = Number.parseInt(amount);
+            if (isNaN(amount)) {
+                res.status(400).json({
+                    message: 'amount must be a number'
+                });
+                return;
+            }
+
+            const disbursement = event.createDisbursement(amount, unspentTxOuts);
+            event.signDisbursement(disbursement);
+
+            pool.addTransaction(disbursement, unspentTxOuts);
+
+            const validTransactions = pool.getValidTransaction();
+            if (validTransactions.length >= 10) {
+                const newBlock = blockchain.addBlock(validTransactions);
+                pool.clearTransaction(unspentTxOuts);
+            }
+
+            res.status(200).json({
+                message: 'OK'
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
     },
-
-
 
     createTransaction: (req, res, next) => {
         try {
@@ -249,12 +277,12 @@ module.exports = {
                 message: e.message
             });
         }
-    },
+    }, 
 
     getTransactionsByPrivateKey: (req, res, next) => {
         try {
             const wallet = req.myWallet;
-            const transactions = getMyTransactions(wallet.address, blockchain.chain);
+            const transactions = getMyTransactions(wallet.address, blockchain.chain, event);
 
             res.status(200).json({
                 message: 'OK',
@@ -319,7 +347,7 @@ module.exports = {
     getHistory: (req, res, next) => {
         try {
             const blocks = blockchain.chain;
-            const transactions = [...convertTransactionFromChain(blocks), ...convertTransactionInPool(pool.transactions)];
+            const transactions = [...convertTransactionFromChain(blocks, event), ...convertTransactionInPool(pool.transactions, event)];
 
             res.status(200).json({
                 message: 'OK',

@@ -1,4 +1,7 @@
 const { event, numUser } = require("../server/data/index");
+const Transaction = require("../transaction");
+const TxIn = require("../transaction/TxIn");
+const TxOut = require("../transaction/TxOut");
 
 class Event {
     constructor(address, name, description, creator, startDate, endDate) {
@@ -43,6 +46,59 @@ class Event {
         }
 
         return true;
+    }
+
+    findTxOutsForAmount = (amount, unspentTxOuts) => {
+        let includedTxOuts = [];
+        let remainAmount = 0;
+        let curAmount = 0;
+
+        for (const [key, unspentTxOut] of unspentTxOuts) {
+            if (this.address === unspentTxOut.address && !unspentTxOut.inPool) {
+                curAmount += unspentTxOut.amount;
+                includedTxOuts.push(unspentTxOut);
+
+                if (curAmount >= amount) {
+                    remainAmount = curAmount - amount;
+                    return {includedTxOuts, remainAmount};
+                }
+            }
+        }
+        return {includedTxOuts: null, remainAmount: null};
+    }
+
+    createDisbursement = (amount, unspentTxOuts) => {
+        const { includedTxOuts, remainAmount } = this.findTxOutsForAmount(amount, unspentTxOuts);
+
+        if (includedTxOuts !== null && remainAmount !== null) {
+            const txRemain = null;
+            if (remainAmount > 0) {
+                txRemain = new TxOut(this.address, remainAmount);
+            }
+            const txIns = includedTxOuts.map((unspentTxOut) => {
+                const txIn = new TxIn(unspentTxOut.txOutId, unspentTxOut.txOutIndex, null);
+                return txIn;
+            });
+
+            const disbursement = new Transaction(this.address, txIns, [txRemain]);
+            return disbursement;
+        } else {
+            throw new Error('You are not enough money to disburse');
+        }
+    }
+
+    signDisbursement = (transaction, unspentTxOuts) => {
+        if (transaction.senderAddress != this.address) {
+            throw new Error('Transaction address is not match.');
+        }
+
+        transaction.txIns.forEach((txIn) => {
+            if (!verifyUnspentTxOut(txIn.txOutId, this.address, unspentTxOuts)) {
+                throw new Error('Transaction address is not match.');
+            }
+
+            txIn.signature = this.keyPair.sign(transaction.hashData());
+        })
     }
 }
 
