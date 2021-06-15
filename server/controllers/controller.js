@@ -86,11 +86,11 @@ module.exports = {
             const wallet = req.myWallet;
             const creator = wallet.keyPair.getPrivate().toString(16);;
             const { name, description, startDate, endDate } = req.body;
-            
+
             const start = startDate.split("/");
             const end = endDate.split("/");
 
-            const newEvent = new Event(address, name, description, creator, 
+            const newEvent = new Event(address, name, description, creator,
                 new Date(start[2], start[1], start[0]), new Date(end[2], end[1], end[0]));
             event.set(address, newEvent);
 
@@ -108,8 +108,8 @@ module.exports = {
         }
     },
 
-    acceptProject = (req, res, next) => {
-        const projectId = req.body.projectId;
+    acceptEvent = (req, res, next) => {
+        const eventId = req.body.projectId;
         const targetEvent = event[projectId];
 
         const wallet = req.myWallet;
@@ -135,11 +135,44 @@ module.exports = {
         })
     },
 
-    getProjectDonateHistory = (req, res, next) => {
-        
+    getEventDonateHistory = (req, res, next) => {
+        try {
+            const eventAddress = req.query.eventAddress;
+            const targetEvent = event.get(eventId);
+
+            if (targetEvent === undefined) {
+                res.status(400).json({
+                    message: 'Event address not found'
+                });
+            }
+
+            const history = pool.filter(transact => {
+                for (let i = 0; i < transact.txOuts.length; i++) {
+                    if (transact.txOuts[i].localeCompare(eventAddress)) {
+                        return true;
+                    }
+                }
+                return false;
+            })
+
+            const ret = history.map(transact => {
+                const moneyReceived = transact.txOuts.find(element => element.address.localeCompare(eventAddress)).amount;
+                return {
+                    senderAddress: transact.senderAddress,
+                    moneyReceived: moneyReceived,
+                    timestamp: transact.timestamp
+                }
+            });
+            return ret;
+        }
+        catch (e) {
+            res.status(500).json({
+                message: e.meass
+            })
+        }
     },
 
-    getProjectDisbursementHistory = (req, res, next) => {
+    getEventDisbursementHistory = (req, res, next) => {
 
     },
 
@@ -201,7 +234,7 @@ module.exports = {
                 }
             });
         }
-        catch(e) {
+        catch (e) {
             res.status(500).json({
                 message: e.message
             });
@@ -226,7 +259,7 @@ module.exports = {
                 payload: block
             })
         }
-        catch(e) {
+        catch (e) {
             res.status(500).json({
                 message: e.message
             });
@@ -265,7 +298,7 @@ module.exports = {
                     blocks,
                     transactions
                 }
-            }); 
+            });
         } catch (e) {
             res.status(500).json({
                 message: e.message
@@ -297,7 +330,7 @@ module.exports = {
         try {
             const wallet = req.myWallet;
             const privateKey = wallet.keyPair.getPrivate().toString(16);
-            
+
             let result = [];
             for (let [key, val] of event) {
                 if (val.creator === privateKey) {

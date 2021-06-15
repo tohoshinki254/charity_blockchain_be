@@ -85,8 +85,14 @@ router.get('/event', (req, res, next) => {
   controller.getAllEvents(req, res, next);
 });
 
+/**
+ * Accept an event
+ * [headers] authorization: privateKey of creator
+ */
 router.post('/event/accept', authenticate, (req, res, next) => {
   controller.acceptProject(req, res, next);
-})
+});
+
+
 
 module.exports = router;
