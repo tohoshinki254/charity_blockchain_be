@@ -1,6 +1,7 @@
 const { convertTransactionFromChain, convertTransactionInPool, generateKeyPair, getMyTransactions } = require('../../utils/commonUtils');
 const { blockchain, unspentTxOuts, pool, event, accountMap } = require('../data/index');
 const Wallet = require('../../wallet');
+const Event = require('../../event');
 
 module.exports = {
     getBlocks: (req, res, next) => {
@@ -62,26 +63,35 @@ module.exports = {
         });
     },
 
-    // addMoneyToWallet: (req, res, next) => {
-    //     try {
-    //         const money = req.money;
-    //         const block = generateNextBlock()
+    addAmountToWallet: (req, res, next) => {
+        try {
+            const wallet = req.myWallet;
+            let amount = req.body.amount;
 
-    //     }
-    //     catch (e) {
-    //         res.status(500).json({
-    //             message: e.message
-    //         })
-    //     }
+            amount = Number.parseInt(amount);
+            if (isNaN(amount)) {
+                res.status(400).json({
+                    message: 'amount must be a number'
+                });
+                return;
+            }
 
-
-
-    // },
+            const transaction = wallet.addMoneyToWallet(amount);
+            const newBlock = blockchain.addBlock([transaction]);
+            res.status(200).json({
+                message: 'OK'
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
+    },
 
     createEvent: (req, res, next) => {
         try {
             const keyPair = generateKeyPair();
-            const privateKey = keyPair.getPrivate.toString(16);
+            const privateKey = keyPair.getPrivate().toString(16);
             const address = keyPair.getPublic().encode("hex", false);
             const wallet = req.myWallet;
             const creator = wallet.keyPair.getPrivate().toString(16);;
@@ -90,8 +100,7 @@ module.exports = {
             const start = startDate.split("/");
             const end = endDate.split("/");
 
-            const newEvent = new Event(address, name, description, creator,
-                new Date(start[2], start[1], start[0]), new Date(end[2], end[1], end[0]));
+            const newEvent = new Event(address, name, description, creator, new Date(start[2], start[1] - 1, start[0]), new Date(end[2], end[1] - 1, end[0]));
             event.set(address, newEvent);
 
             res.status(200).json({
@@ -208,7 +217,7 @@ module.exports = {
     disbursement: (req, res, next) => {
         try {
             let { amount } = req.body;
-            const event = req.curEvent;
+            const curEvent = req.curEvent;
 
             amount = Number.parseInt(amount);
             if (isNaN(amount)) {
@@ -218,8 +227,8 @@ module.exports = {
                 return;
             }
 
-            const disbursement = event.createDisbursement(amount, unspentTxOuts);
-            event.signDisbursement(disbursement);
+            const disbursement = curEvent.createDisbursement(amount, unspentTxOuts);
+            curEvent.signDisbursement(disbursement);
 
             pool.addTransaction(disbursement, unspentTxOuts);
 
@@ -258,19 +267,31 @@ module.exports = {
                 return;
             }
 
-            const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts);
-            wallet.signTransaction(transaction);
-
-            pool.addTransaction(transaction, unspentTxOuts);
-
-            const validTransactions = pool.getValidTransaction();
-            if (validTransactions.length >= 10) {
-                const newBlock = blockchain.addBlock(validTransactions);
-                pool.clearTransaction(unspentTxOuts);
+            const receiptEvent = event.get(receiptAddress);
+            if (receiptEvent !== undefined && receiptEvent !== null) {
+                const current = new Date();
+                if (receiptEvent.endDate < current) {
+                    receiptEvent.endEvent();
+                } else {
+                    const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts);
+                    wallet.signTransaction(transaction);
+        
+                    pool.addTransaction(transaction, unspentTxOuts);
+        
+                    const validTransactions = pool.getValidTransaction();
+                    if (validTransactions.length >= 10) {
+                        const newBlock = blockchain.addBlock(validTransactions);
+                        pool.clearTransaction(unspentTxOuts);
+                    }
+        
+                    res.status(200).json({
+                        message: 'OK'
+                    });
+                    return;
+                }
             }
-
-            res.status(200).json({
-                message: 'OK'
+            res.status(400).json({
+                message: 'event is not found'
             });
         } catch (e) {
             res.status(500).json({
@@ -400,6 +421,20 @@ module.exports = {
                 payload: {
                     events: result
                 }
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    },
+
+    forceEndEvent: (req, res, next) => {
+        try {
+            const curEvent = req.curEvent;
+            curEvent.endEvent();
+            res.status(200).json({
+                message: 'OK'
             });
         } catch (e) {
             res.status(500).json({

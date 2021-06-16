@@ -67,6 +67,12 @@ class Wallet {
         }
     }
 
+    addMoneyToWallet = (amount) => {
+        const txOut = new TxOut(this.address, amount);
+        const transaction = new Transaction(null, [], [txOut]);
+        return transaction;
+    }
+
     signTransaction = (transaction, unspentTxOuts) => {
         if (transaction.senderAddress != this.address) {
             throw new Error('Transaction address is not match.');

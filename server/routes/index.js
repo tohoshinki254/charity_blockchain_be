@@ -110,4 +110,17 @@ router.post('/event/disbursement', (req, res, next) => {
   controller.disbursement(req, res, next);
 });
 
+// add money to wallet
+// [headers] authorization: privateKey of wallet
+// [body] amount
+router.post('/wallet/add', authenticateWallet, (req, res, next) => {
+  controller.addAmountToWallet(req, res, next);
+});
+
+// end event(project)
+// [headers] authorization: privateKey of event(project)
+router.post('/event/end', authenticateEvent, (req, res, next) => {
+  controller.forceEndEvent(req, res, next);
+});
+
 module.exports = router;
