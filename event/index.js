@@ -15,6 +15,7 @@ class Event {
         this.startDate = startDate;
         this.endDate = endDate;
         this.amountDonated = 0;
+        this.timestamp = Date.now();
     }
 
     getCurrentAmount = (unspentTxOuts) => {

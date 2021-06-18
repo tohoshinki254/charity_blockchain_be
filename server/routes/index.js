@@ -12,6 +12,12 @@ router.get('/blocks', (req, res, next) => {
   controller.getBlocks(req, res, next);
 });
 
+// get block by index
+// [query] index
+router.get('/blocks/:index', (req, res, next) => {
+  controller.getBlockByIndex(req, res, next);
+});
+
 // create-wallet
 // [body] name: name of creator
 router.post('/wallet', (req, res, next) => {
@@ -30,6 +36,13 @@ router.get('/wallet', authenticateWallet, (req, res, next) => {
   controller.getWalletInfo(req, res, next);
 });
 
+// add money to wallet
+// [headers] authorization: privateKey of wallet
+// [body] amount
+router.post('/wallet/add', authenticateWallet, (req, res, next) => {
+  controller.addAmountToWallet(req, res, next);
+});
+
 // create transaction
 // [headers] authorization: privateKey
 // [body] {
@@ -45,21 +58,21 @@ router.get('/transaction', (req, res, next) => {
   controller.getTransactionInPool(req, res, next);
 });
 
-// get history
-router.get('/history', (req, res, next) => {
-  controller.getHistory(req, res, next);
-});
-
 // get my transactions
 // [headers] authorization: privateKey
 router.get('/transaction/mine', authenticateWallet, (req, res, next) => {
   controller.getTransactionsByPrivateKey(req, res, next);
 });
 
-// get block by index
-// [query] index
-router.get('/blocks/:index', (req, res, next) => {
-  controller.getBlockByIndex(req, res, next);
+// get transaction by id
+// [query] id: id of transaction
+router.get('/transaction/id', (req, res, next) => {
+  controller.getTransactionById(req, res, next);
+});
+
+// get history
+router.get('/history', (req, res, next) => {
+  controller.getHistory(req, res, next);
 });
 
 // create event
@@ -110,17 +123,23 @@ router.post('/event/disbursement', (req, res, next) => {
   controller.disbursement(req, res, next);
 });
 
-// add money to wallet
-// [headers] authorization: privateKey of wallet
-// [body] amount
-router.post('/wallet/add', authenticateWallet, (req, res, next) => {
-  controller.addAmountToWallet(req, res, next);
-});
-
 // end event(project)
 // [headers] authorization: privateKey of event(project)
 router.post('/event/end', authenticateEvent, (req, res, next) => {
   controller.forceEndEvent(req, res, next);
+});
+
+// check accepted
+// [headers] authorization: privateKey of wallet
+// [query] address: publicKey of event(project)
+router.get('/event/accepted', authenticateWallet, (req, res, next) => {
+  controller.checkAccepted(req, res, next);
+});
+
+// get event(project) by address key
+// [query] address: publicKey of event(project)
+router.get('/event/detail', (req, res, next) => {
+  controller.getEventByAddress(req, res, next);
 });
 
 module.exports = router;

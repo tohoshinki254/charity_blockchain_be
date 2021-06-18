@@ -144,6 +144,29 @@ module.exports = {
         })
     },
 
+    checkAccepted: (req, res, next) => {
+        try {
+            const { address } = req.query;
+            const wallet = req.myWallet;
+            const publicKey = wallet.keyPair.getPublic().toString(16);
+
+            const curEvent = event.get(address);
+            const result = true;
+            if (!curEvent.acceptPeople.has(publicKey)) {
+                result = false;
+            }
+
+            res.status(200).json({
+                message: 'OK',
+                accepted: result
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    },
+
     getEventDonateHistory: (req, res, next) => {
         try {
             const eventAddress = req.query.address;
@@ -274,7 +297,6 @@ module.exports = {
                     receiptEvent.endEvent();
                 } else {
                     const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts);
-                    wallet.signTransaction(transaction);
         
                     pool.addTransaction(transaction, unspentTxOuts);
         
@@ -440,6 +462,54 @@ module.exports = {
             res.status(500).json({
                 message: e.message
             });
+        }
+    },
+
+    getEventByAddress: (req, res, next) => {
+        try {
+            const { address } = req.query;
+            const curEvent = event.get(address);
+
+            if (curEvent !== undefined && curEvent !== null) {
+                res.status(200).json({
+                    message: 'OK',
+                    event: curEvent
+                });
+                return;
+            }
+
+            res.status(400).json({
+                message: 'event not found'
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            });
+        }
+    },
+
+    getTransactionById: (req, res, next) => {
+        try {
+            const { id } = req.query;
+            const transactions = [...convertTransactionFromChain(blocks, event), ...convertTransactionInPool(pool.transactions, event)];
+            
+            transactions.forEach((tx) => {
+                if (tx.id === id) {
+                    res.status(200).json({
+                        message: 'OK',
+                        payload: tx
+                    });
+                    return;
+                }
+            });
+
+            res.status(400).json({
+                message: 'transaction not found'
+            });
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
         }
     }
 }
