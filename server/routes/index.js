@@ -142,4 +142,25 @@ router.get('/event/detail', (req, res, next) => {
   controller.getEventByAddress(req, res, next);
 });
 
+
+//------------------------------------------------------------
+//P2P
+//------------------------------------------------------------
+
+router.get('/peers', (req, res, next) => {
+  controller.getPeers(req, res, next);
+});
+
+router.get('/senderSockets', (req, res, next) => {
+  controller.getSenderSockets(req, res, next);      
+});
+
+router.get('/addPeer', (req, res, next) => {
+  controller.addPeer(req, res, next);
+})
+
+
+
+
+
 module.exports = router;

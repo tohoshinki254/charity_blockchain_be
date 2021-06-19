@@ -1,7 +1,8 @@
 const { convertTransactionFromChain, convertTransactionInPool, generateKeyPair, getMyTransactions } = require('../../utils/commonUtils');
-const { blockchain, unspentTxOuts, pool, event, accountMap } = require('../data/index');
+const { blockchain, unspentTxOuts, pool, event, accountMap, peerHttpPortList, senderSockets } = require('../data/index');
 const Wallet = require('../../wallet');
 const Event = require('../../event');
+const { connectToPeers } = require('../../utils/p2pUtils');
 
 module.exports = {
     getBlocks: (req, res, next) => {
@@ -511,5 +512,48 @@ module.exports = {
                 message: e.message
             })
         }
+    },
+    //---------------------------------------------------
+    //P2P
+    //---------------------------------------------------
+    
+    getPeers: (req, res, next) => {
+        try {
+            console.log("Get peers");
+            let list = peerHttpPortList;
+    
+            res.status(200).send(list);
+        } catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
+    },
+
+    getSenderSockets: (req, res, next) => {
+        try {
+            res.send(senderSockets.map(s => s.io.uri));
+        }
+        catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
+    },
+
+    addPeers: (req, res, next) => {
+        try {
+            connectToPeers(req.body.peer, req.body.httpPort);
+            res.status(200).json({
+                message: 'OK'
+            })
+        }
+        catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
     }
+
+    
 }

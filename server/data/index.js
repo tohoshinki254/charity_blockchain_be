@@ -13,6 +13,12 @@ const _numUser = 0;
 
 const _accountMap = new Map();
 
+const _peerHttpPortList = [];
+
+const _sockets = [];  
+
+const _senderSockets = [];
+
 const accountMap = _accountMap;
 
 const event = _event;
@@ -25,11 +31,20 @@ const unspentTxOuts = _unspentTxOuts;
 
 const pool = _pool;
 
+const peerHttpPortList = _peerHttpPortList;
+
+const sockets = _sockets;
+
+const senderSockets = _senderSockets;
+
 module.exports = {
     accountMap,
     event,
     numUser,
     blockchain,
     unspentTxOuts,
-    pool
+    pool,
+    peerHttpPortList,
+    sockets,
+    senderSockets
 };

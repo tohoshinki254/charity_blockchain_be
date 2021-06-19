@@ -7,19 +7,45 @@ require('dotenv').config();
 var app = require('../app');
 var debug = require('debug')('charity-blockchain-be:server');
 var http = require('http');
+const { initP2PConnect } = require('../utils/p2pUtils');
 
 /**
  * Get port from environment and store in Express.
  */
 
 var port = normalizePort(process.env.PORT || '5000');
+var superNodePort = normalizePort(process.env.SUPER_NODE_PORT || '5000')
+var p2pPort = normalizePort(process.env.P2P_PORT || '6000')
+var uiSocketPort = normalizePort(process.env.UI_SOCKET_PORT || '7000')
+
 app.set('port', port);
+app.set('superNodePort', superNodePort);
+app.set('p2pPort', p2pPort);
+app.set('uiSocketPort', uiSocketPort);
 
 /**
  * Create HTTP server.
  */
 
 var server = http.createServer(app);
+
+
+/**
+ * Setup socket client/server
+ */
+
+//* Socket server dùng cho P2P
+var httpP2PServer = require('http').createServer();
+var p2pSocketServer = require('socket.io')(httpP2PServer, {
+  cors: { origin: "*" }
+})
+
+//* Socket server dùng cho kết nối với client
+var httpUIServer = require('http').createServer();
+var uiSocketServer = require('socket.io')(httpUIServer, {
+  cors: { origin: "*" },
+  setTimeout: 10000
+})
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -28,6 +54,21 @@ var server = http.createServer(app);
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+p2pSocketServer.on('connection', socket => {
+  //init connection
+  require('../utils/p2pUtils').initConnection(socket);
+})
+
+uiSocketServer.on('connection', socket => {
+  console.log('A client UI has accessed to this UI socket!!!')
+})
+
+console.log(port);
+console.log(p2pPort);
+httpP2PServer.listen(p2pPort, () => console.log('App is listening on websocket - P2P port on: ' + p2pPort))
+httpUIServer.listen(uiSocketPort, () => console.log('App is listening UI socket port on: ' + uiSocketPort))
+initP2PConnect(superNodePort, port)
 
 /**
  * Normalize a port into a number, string, or false.
