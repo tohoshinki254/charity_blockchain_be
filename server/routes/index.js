@@ -101,7 +101,7 @@ router.get('/event', (req, res, next) => {
 // accept an event
 // [headers] authorization: privateKey of creator
 router.post('/event/accept', authenticateWallet, (req, res, next) => {
-  controller.acceptProject(req, res, next);
+  controller.acceptEvent(req, res, next);
 });
 
 // get event donate history
@@ -157,10 +157,6 @@ router.get('/senderSockets', (req, res, next) => {
 
 router.get('/addPeer', (req, res, next) => {
   controller.addPeer(req, res, next);
-})
-
-
-
-
+});
 
 module.exports = router;

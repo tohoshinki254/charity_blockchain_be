@@ -1,10 +1,10 @@
-const { event, numUser } = require("../server/data/index");
+const { event, accountMap } = require("../server/data/index");
 const Transaction = require("../transaction");
 const TxIn = require("../transaction/TxIn");
 const TxOut = require("../transaction/TxOut");
 
 class Event {
-    constructor(address, name, description, creator, startDate, endDate) {
+    constructor(address, name, description, creator, creatorName, startDate, endDate) {
         this.address = address;
         this.id = event.length;
         this.name = name;
@@ -12,6 +12,7 @@ class Event {
         this.status = 0;   
         this.acceptPeople = new Set();
         this.creator = creator;
+        this.creatorName = creatorName;
         this.startDate = startDate;
         this.endDate = endDate;
         this.amountDonated = 0;
@@ -44,10 +45,10 @@ class Event {
         }
 
         this.acceptPeople.add(publicKey);
-        if (numUser <= 500) {
-            if (this.acceptPeople.size === numUser) this.status = 1;
+        if (accountMap.size <= 500) {
+            if (this.acceptPeople.size === accountMap.size) this.status = 1;
         } else {
-            if (this.acceptPeople.size * 1.0 / numUser >= 0.9) this.status = 1;
+            if (this.acceptPeople.size * 1.0 / accountMap.size >= 0.9) this.status = 1;
         }
 
         return true;

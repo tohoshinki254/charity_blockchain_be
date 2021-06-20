@@ -26,7 +26,8 @@ module.exports = {
             message: 'OK',
             payload: {
                 privateKey: privateKey,
-                address: address
+                address: address,
+                name: name
             }
         });
     },
@@ -59,7 +60,8 @@ module.exports = {
             message: 'OK',
             payload: {
                 address: wallet.getAddress(),
-                balance: wallet.getBalance(unspentTxOuts)
+                balance: wallet.getBalance(unspentTxOuts),
+                name: wallet.getName()
             }
         });
     },
@@ -78,7 +80,12 @@ module.exports = {
             }
 
             const transaction = wallet.addMoneyToWallet(amount);
-            const newBlock = blockchain.addBlock([transaction]);
+            pool.addTransaction(transaction);
+
+            const validTransactions = pool.getValidTransaction();
+            const newBlock = blockchain.addBlock(validTransactions);
+            pool.clearTransaction(unspentTxOuts);
+
             res.status(200).json({
                 message: 'OK'
             });
@@ -95,13 +102,14 @@ module.exports = {
             const privateKey = keyPair.getPrivate().toString(16);
             const address = keyPair.getPublic().encode("hex", false);
             const wallet = req.myWallet;
-            const creator = wallet.keyPair.getPrivate().toString(16);;
+            const creator = wallet.getAddress();
+            const creatorName = wallet.getName();
             const { name, description, startDate, endDate } = req.body;
 
             const start = startDate.split("/");
             const end = endDate.split("/");
 
-            const newEvent = new Event(address, name, description, creator, new Date(start[2], start[1] - 1, start[0]), new Date(end[2], end[1] - 1, end[0]));
+            const newEvent = new Event(address, name, description, creator, creatorName, new Date(start[2], start[1] - 1, start[0]), new Date(end[2], end[1] - 1, end[0]));
             event.set(address, newEvent);
 
             res.status(200).json({
@@ -411,7 +419,12 @@ module.exports = {
         try {
             let result = [];
             for (let [key, val] of event) {
-                result.push(val);
+                const curEvent = {
+                    event: val,
+                    percentAccepted: val.acceptPeople.size / accountMap.size
+                };
+
+                result.push(curEvent);
             }
 
             res.status(200).json({
@@ -474,7 +487,8 @@ module.exports = {
             if (curEvent !== undefined && curEvent !== null) {
                 res.status(200).json({
                     message: 'OK',
-                    event: curEvent
+                    event: curEvent,
+                    percentAccepted: curEvent.acceptPeople.size / accountMap.size
                 });
                 return;
             }
@@ -513,6 +527,7 @@ module.exports = {
             })
         }
     },
+
     //---------------------------------------------------
     //P2P
     //---------------------------------------------------
@@ -554,6 +569,4 @@ module.exports = {
             })
         }
     }
-
-    
 }

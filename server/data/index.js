@@ -9,8 +9,6 @@ const _pool = new Pool();
 
 const _event = new Map();
 
-const _numUser = 0;
-
 const _accountMap = new Map();
 
 const _peerHttpPortList = [];
@@ -22,8 +20,6 @@ const _senderSockets = [];
 const accountMap = _accountMap;
 
 const event = _event;
-
-const numUser = _numUser;
 
 const blockchain = _blockchain;
 
@@ -40,7 +36,6 @@ const senderSockets = _senderSockets;
 module.exports = {
     accountMap,
     event,
-    numUser,
     blockchain,
     unspentTxOuts,
     pool,

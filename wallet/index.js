@@ -14,6 +14,10 @@ class Wallet {
         return this.address;
     }
 
+    getName = () => {
+        return this.name;
+    }
+
     getBalance = (unspentTxOuts) => {
         let balance = 0;
 
