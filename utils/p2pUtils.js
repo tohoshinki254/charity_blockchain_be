@@ -1,7 +1,57 @@
+require('dotenv').config();
 const axios = require('axios');
 const ioClient = require('socket.io-client');
 const { senderSockets, peerHttpPortList, sockets } = require('../server/data');
-const MessageTypeEnum = require('./messageTypeEnum')
+var MessageTypeEnum = {
+    CREATE_CONNECTION: 0
+}
+
+/**
+ * Dùng để xử lý các message nhận được từ socket client gửi lên
+ * Message là một string JSON với cấu trúc
+ * {
+ *      type: Lấy từ enum
+ *      data: Tùy ý
+ * }
+ * @param {Socket} ws 
+ */
+const initSocketServerMessageHandler = ws => {
+    ws.on('message', message => {
+        try {
+            console.log("Client message handler");
+            console.log(message);
+
+            switch (message.type) {
+                case MessageTypeEnum.CREATE_CONNECTION:
+                    console.log(message.data.port);
+
+                    const newSocket = ioClient("http://localhost:" + message.data.port, {
+                        setTimeout: 10000
+                    });
+
+                    senderSockets.push(newSocket);
+                    peerHttpPortList.push("http://localhost:" + message.data.httpPort)
+
+                    // write(newSocket, queryChainLengthMsg());
+                    break;
+            }
+        }
+        catch (e) {
+            console.log(e);
+        }
+    })
+};
+
+const initErrorHandler = ws => {
+    const closeConnection = closingWebSocket => {
+        console.log('Connection failed to peer: ' + closingWebSocket.url);
+        sockets.splice(sockets.indexOf(closingWebSocket), 1);
+    }
+
+    ws.on('close', () => closeConnection(ws));
+    ws.on('error', () => closeConnection(ws));
+}
+
 
 module.exports = {
     /**
@@ -27,8 +77,8 @@ module.exports = {
             }
 
             await axios.post(url + '/addPeer', {
-                peer: p2pPort,
-                httpPort: httpPort
+                peer: process.env.P2P_PORT,
+                httpPort: process.env.PORT
             }).then(res => {
                 if (res.status === 200) {
                     console.log("Init connection to peer: Success")
@@ -85,13 +135,16 @@ module.exports = {
 
         console.log("New socket created, prepare for init connection");
 
-        newSocket.send({
+
+        let data = {
             type: MessageTypeEnum.CREATE_CONNECTION,
             data: {
                 port: process.env.P2P_PORT,
-                httpPort: process.env.HTTP_PORT
+                httpPort: process.env.PORT
             }
-        });
+        }
+        console.log(data);
+        newSocket.send(data);
 
         senderSockets.push(newSocket);
         peerHttpPortList.push("http://localhost:" + httpPort);
@@ -99,20 +152,25 @@ module.exports = {
 
     /**
         * Dùng để xử lý các message nhận được từ socket server gửi về
-        * Message là một string JSON với cấu trúc
+        * Message là một object với cấu trúc
         * {
         *      "type": Lấy từ enum
         *      "data": Tùy ý, ưu tiên một số hoặc json
         * }
     */
     initSocketClientMessageHandler: message => {
-        let p = JSONToObject(message);
-        // let pData = JSONToObject(p.data);
+        console.log("Client message handler");
+        console.log(message);
+    
+        try {
+            switch (message.type) {
 
-        //! Xử lý data tại đây
-        switch (p.type) {
-
+            }
         }
+        catch (e) {
+            console.log(e.message);
+        }
+        
     },
 
     initConnection: (ws) => {
@@ -125,56 +183,11 @@ module.exports = {
 
         console.log("Sockets length: " + sockets.length);
 
-        this.initSocketServerMessageHandler(ws);
-        this.initErrorHandler(ws);
+        initSocketServerMessageHandler(ws);
+        initErrorHandler(ws);
 
         // setTimeout(() => {
         //     this.broadcast(queryTransactionPoolMsg());
         // }, 500)
-    },
-
-    /**
-     * Dùng để xử lý các message nhận được từ socket client gửi lên
-     * Message là một string JSON với cấu trúc
-     * {
-     *      type: Lấy từ enum
-     *      data: Tùy ý
-     * }
-     * @param {Socket} ws 
-     */
-    initSocketServerMessageHandler: ws => {
-        ws.on('message', data => {
-            try {
-                let message = JSONToObject(data);
-
-                switch (message.type) {
-                    case MessageTypeEnum.CREATE_CONNECTION:
-                        console.log(message.data.port);
-
-                        const newSocket = ioClient("http://localhost:" + message.data.port, {
-                            setTimeout: 10000
-                        });
-
-                        senderSockets.push(newSocket);
-                        peerHttpPortList.push("http://localhost:" + message.data.httpPort)
-
-                        // write(newSocket, queryChainLengthMsg());
-                        break;
-                }
-            }
-            catch (e) {
-                console.log(e);
-            }
-        })
-    },
-
-    initErrorHandler: ws => {
-        const closeConnection = closingWebSocket => {
-            console.log('Connection failed to peer: ' + closingWebSocket.url);
-            sockets.splice(sockets.indexOf(closingWebSocket), 1);
-        }
-
-        ws.on('close', () => closeConnection(ws));
-        ws.on('error', () => closeConnection(ws));
     }
 }

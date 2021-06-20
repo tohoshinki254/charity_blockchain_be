@@ -155,8 +155,8 @@ router.get('/senderSockets', (req, res, next) => {
   controller.getSenderSockets(req, res, next);      
 });
 
-router.get('/addPeer', (req, res, next) => {
-  controller.addPeer(req, res, next);
+router.post('/addPeer', (req, res, next) => {
+  controller.addPeers(req, res, next);
 });
 
 module.exports = router;
