@@ -33,11 +33,16 @@ const verifySignature = (publicKey, signature, dataHash) => {
 };
 
 const verifyTransaction = (publicKey, transaction) => {
+    if (transaction.txIns.length === 0) {
+        return true;
+    }
+
     transaction.txIns.forEach((txIn) => {
         if (!verifySignature(publicKey, txIn.signature, transaction.id)) {
             return false;
         }
     });
+    return true;
 };
 
 const convertTransactionFromChain = (chain, event) => {

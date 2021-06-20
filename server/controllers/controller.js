@@ -76,11 +76,11 @@ module.exports = {
                 res.status(400).json({
                     message: 'amount must be a number'
                 });
-                return;
+                return; 
             }
 
             const transaction = wallet.addMoneyToWallet(amount);
-            pool.addTransaction(transaction);
+            pool.addTransaction(transaction, unspentTxOuts);
 
             const validTransactions = pool.getValidTransaction();
             const newBlock = blockchain.addBlock(validTransactions);
@@ -443,12 +443,17 @@ module.exports = {
     getEventsByPrivateKey: (req, res, next) => {
         try {
             const wallet = req.myWallet;
-            const privateKey = wallet.keyPair.getPrivate().toString(16);
+            const publicKey = wallet.keyPair.getPublic().encode("hex", false);
 
             let result = [];
             for (let [key, val] of event) {
-                if (val.creator === privateKey) {
-                    result.push(val);
+                if (val.creator === publicKey) {
+                    const curEvent = {
+                        event: val,
+                        percentAccepted: val.acceptPeople.size / accountMap.size
+                    };
+
+                    result.push(curEvent);
                 }
             }
 

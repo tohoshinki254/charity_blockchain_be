@@ -1,5 +1,5 @@
 class TxOut {
-    constructor(address, sender, receiver, amount) {
+    constructor(address, amount) {
         this.address = address;
         this.amount = amount;
     }

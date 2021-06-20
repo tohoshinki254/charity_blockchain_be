@@ -21,11 +21,11 @@ class Wallet {
     getBalance = (unspentTxOuts) => {
         let balance = 0;
 
-        unspentTxOuts.forEach((unspentTxOut) => {
-            if (unspentTxOut.address === this.address && !unspentTxOut.inPool) {
-                balance += unspentTxOut.amount;
+        for (let [key, val] of unspentTxOuts) {
+            if (val.address === this.address) {
+                balance += val.amount;
             }
-        });
+        }
 
         return balance;
     }

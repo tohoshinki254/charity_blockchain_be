@@ -41,8 +41,8 @@ class Pool {
     clearTransaction = (unspentTxOuts) => {
         const validTransactions = this.getValidTransaction();
 
-        let index = 0;
         validTransactions.forEach((transaction) => {
+            let index = 0;
             transaction.txOuts.forEach((txOut) => {
                 const unspentTxOut = new UnspentTxOut(
                     generateId(),
