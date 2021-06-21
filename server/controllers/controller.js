@@ -2,7 +2,9 @@ const { convertTransactionFromChain, convertTransactionInPool, generateKeyPair, 
 const { blockchain, unspentTxOuts, pool, event, accountMap, peerHttpPortList, senderSockets } = require('../data/index');
 const Wallet = require('../../wallet');
 const Event = require('../../event');
-const { connectToPeers } = require('../../utils/p2pUtils');
+const { connectToPeers, broadcast } = require('../../utils/p2pUtils');
+const { MessageTypeEnum } = require('../../utils/constants');
+const { messageUpdateBlockchain, messageUpdateTransactionPool, messageAddEvents, messageDisbursement } = require('../messages/message');
 
 module.exports = {
     getBlocks: (req, res, next) => {
@@ -86,6 +88,10 @@ module.exports = {
             const newBlock = blockchain.addBlock(validTransactions);
             pool.clearTransaction(unspentTxOuts);
 
+
+            broadcast(messageUpdateBlockchain);
+
+
             res.status(200).json({
                 message: 'OK'
             });
@@ -111,6 +117,8 @@ module.exports = {
 
             const newEvent = new Event(address, name, description, creator, creatorName, new Date(start[2], start[1] - 1, start[0]), new Date(end[2], end[1] - 1, end[0]));
             event.set(address, newEvent);
+
+            broadcast(messageAddEvents(event));
 
             res.status(200).json({
                 message: 'OK',
@@ -147,6 +155,8 @@ module.exports = {
             });
             return;
         }
+
+        broadcast(messageAddEvents(eventId, publicKey));
 
         res.status(200).json({
             message: 'OK'
@@ -270,6 +280,8 @@ module.exports = {
                 pool.clearTransaction(unspentTxOuts);
             }
 
+            broadcast(messageDisbursement(amount, curEvent));
+
             res.status(200).json({
                 message: 'OK'
             });
@@ -314,6 +326,8 @@ module.exports = {
                         const newBlock = blockchain.addBlock(validTransactions);
                         pool.clearTransaction(unspentTxOuts);
                     }
+
+                    broadcast(messageUpdateTransactionPool);
         
                     res.status(200).json({
                         message: 'OK'

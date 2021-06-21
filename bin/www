@@ -64,8 +64,6 @@ uiSocketServer.on('connection', socket => {
   console.log('A client UI has accessed to this UI socket!!!')
 })
 
-console.log(port);
-console.log(p2pPort);
 httpP2PServer.listen(p2pPort, () => console.log('App is listening on websocket - P2P port on: ' + p2pPort))
 httpUIServer.listen(uiSocketPort, () => console.log('App is listening UI socket port on: ' + uiSocketPort))
 initP2PConnect(superNodePort, port)

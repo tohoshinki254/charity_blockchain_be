@@ -54,7 +54,7 @@ class Wallet {
 
         if (includedTxOuts !== null && remainAmount !== null) {
             const txOut = new TxOut(receiptAddress, amount);
-            const txRemain = null;
+            let txRemain = null;
             if (remainAmount > 0) {
                 txRemain = new TxOut(this.address, remainAmount);
             }

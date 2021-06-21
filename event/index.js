@@ -77,7 +77,7 @@ class Event {
         const { includedTxOuts, remainAmount } = this.findTxOutsForAmount(amount, unspentTxOuts);
 
         if (includedTxOuts !== null && remainAmount !== null) {
-            const txRemain = null;
+            let txRemain = null;
             if (remainAmount > 0) {
                 txRemain = new TxOut(this.address, remainAmount);
             }

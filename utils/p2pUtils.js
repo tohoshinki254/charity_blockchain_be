@@ -1,10 +1,9 @@
 require('dotenv').config();
 const axios = require('axios');
 const ioClient = require('socket.io-client');
-const { senderSockets, peerHttpPortList, sockets } = require('../server/data');
-var MessageTypeEnum = {
-    CREATE_CONNECTION: 0
-}
+const { senderSockets, peerHttpPortList, sockets, blockchain, pool, event } = require('../server/data');
+const MessageTypeEnum = require('../utils/constants').MessageTypeEnum;
+const localhost = 'http://localhost:';
 
 /**
  * Dùng để xử lý các message nhận được từ socket client gửi lên
@@ -25,12 +24,12 @@ const initSocketServerMessageHandler = ws => {
                 case MessageTypeEnum.CREATE_CONNECTION:
                     console.log(message.data.port);
 
-                    const newSocket = ioClient("http://localhost:" + message.data.port, {
+                    const newSocket = ioClient(localhost + message.data.port, {
                         setTimeout: 10000
                     });
 
                     senderSockets.push(newSocket);
-                    peerHttpPortList.push("http://localhost:" + message.data.httpPort)
+                    peerHttpPortList.push(localhost + message.data.httpPort)
 
                     // write(newSocket, queryChainLengthMsg());
                     break;
@@ -57,10 +56,18 @@ module.exports = {
     /**
      * Sử dụng các sender sockets (server) đã có trước đó bắn thông tin cho tất
      * cả các client (ở đây là socket-client) tương ứng 
-     * @param {JSON} message 
+     * @param {JSON} message chứa 2 trường thông tin type và data
      */
     broadcast: (message) => {
-        senderSockets.forEach(socket => write(socket, message));
+        senderSockets.forEach(socket => socket.send(message));
+    },
+
+    /**
+     * 
+     * @param {Object} message 
+     */
+    broadcastToUI: (message) => {
+        uiSocketServer.send(message);
     },
 
     /**
@@ -92,11 +99,11 @@ module.exports = {
         };
 
         const getPeerFromSuperNode = async (superNodeHttpPort) => {
-            await axios.get('http://localhost:' + superNodeHttpPort + '/peers')
+            await axios.get(localhost + superNodeHttpPort + '/peers')
                 .then(res => {
                     if (res.status === 200) {
                         for (let i = 0; i < res.data.length; ++i) {
-                            if (res.data[i] !== 'http://localhost:' + httpPort && res.data[i] !== 'http://localhost:' + superNodeHttpPort) {
+                            if (res.data[i] !== localhost + httpPort && res.data[i] !== localhost + superNodeHttpPort) {
                                 addPeer(res.data[i]);
                             }
                         }
@@ -111,7 +118,7 @@ module.exports = {
         }
 
 
-        await addPeer('http://localhost:' + superNodeHttpPort, superNodeHttpPort, httpPort);
+        await addPeer(localhost + superNodeHttpPort, superNodeHttpPort, httpPort);
         await getPeerFromSuperNode(superNodeHttpPort);
     },
 
@@ -126,7 +133,7 @@ module.exports = {
      * @param {} httpPort http port của node cần kết nối
      */
     connectToPeers: (newPeer, httpPort) => {
-        const newSocket = ioClient("http://localhost:" + newPeer);
+        const newSocket = ioClient(localhost + newPeer);
 
 
         newSocket.on('message', data => {
@@ -147,7 +154,7 @@ module.exports = {
         newSocket.send(data);
 
         senderSockets.push(newSocket);
-        peerHttpPortList.push("http://localhost:" + httpPort);
+        peerHttpPortList.push(localhost + httpPort);
     },
 
     /**
@@ -161,16 +168,51 @@ module.exports = {
     initSocketClientMessageHandler: message => {
         console.log("Client message handler");
         console.log(message);
-    
+
         try {
             switch (message.type) {
+                case MessageTypeEnum.UPDATE_BLOCKCHAIN:
+                    let newBlockchain = message.data.blockchain;
+                    // let newPool = data.pool;
+
+                    //TODO: Xử lý logic
+                    if (isValidChain(newBlockchain)) {
+                        blockchain = newBlockchain;
+                    }
+
+                    //Bắn yêu cầu client update thông tin mới
+                    this.broadcastToUI(UIMessageUpdateBlockchain);
+
+                    break;
+                case MessageTypeEnum.UPDATE_TRANSACTION_POOL:
+                    let newPool = message.data.pool;
+
+                    pool = newPool;
+
+                    this.broadcastToUI(UIMessageUpdatePool);
+                    break;
+                case MessageTypeEnum.UI_ADD_EVENT:
+                    let newEvent = message.data.event;
+
+                    event.set(event.address, newEvent);
+
+                    this.broadcastToUI(UIMessageAddEvent);
+                    break;
+                case MessageTypeEnum.DISBURSEMENT:
+                    let amount = message.data.amount;
+                    let curEvent = message.data.curEvent;
+                    let pool = message.data.pool;
+
+                    this.broadcastToUI(UIMessageDisbursement);
+                    break;
+
 
             }
         }
         catch (e) {
             console.log(e.message);
         }
-        
+
     },
 
     initConnection: (ws) => {
