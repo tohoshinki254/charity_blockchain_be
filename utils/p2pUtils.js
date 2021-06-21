@@ -205,8 +205,12 @@ module.exports = {
 
                     this.broadcastToUI(UIMessageDisbursement);
                     break;
+                case MessageTypeEnum.FORCE_END_EVENT:
+                    let curEvent = message.data.curEvent;
 
 
+                    this.broadcastToUI(UIMessageForceEndEvent);
+                    break;
             }
         }
         catch (e) {

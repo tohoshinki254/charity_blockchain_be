@@ -4,7 +4,7 @@ const Wallet = require('../../wallet');
 const Event = require('../../event');
 const { connectToPeers, broadcast } = require('../../utils/p2pUtils');
 const { MessageTypeEnum } = require('../../utils/constants');
-const { messageUpdateBlockchain, messageUpdateTransactionPool, messageAddEvents, messageDisbursement } = require('../messages/message');
+const { messageUpdateBlockchain, messageUpdateTransactionPool, messageAddEvents, messageDisbursement, messageForceEndEvent } = require('../messages/message');
 
 module.exports = {
     getBlocks: (req, res, next) => {
@@ -488,6 +488,9 @@ module.exports = {
         try {
             const curEvent = req.curEvent;
             curEvent.endEvent();
+
+            broadcast(messageForceEndEvent(curEvent));
+
             res.status(200).json({
                 message: 'OK'
             });

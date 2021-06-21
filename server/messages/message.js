@@ -3,7 +3,7 @@ const { blockchain, pool } = require("../data");
 
 module.exports = {
     messageUpdateBlockchain: {
-        type: MessageTypeEnum.UPDATE_ALL,
+        type: MessageTypeEnum.UPDATE_BLOCKCHAIN,
         data: {
             blockchain: blockchain
         }
@@ -17,7 +17,7 @@ module.exports = {
     },
 
     messageAddEvents: (event) => {
-        return({
+        return ({
             type: MessageTypeEnum.ADD_EVENT,
             data: {
                 event: event
@@ -36,7 +36,7 @@ module.exports = {
     },
 
     messageDisbursement: (amount, curEvent) => {
-        return({
+        return ({
             type: MessageTypeEnum.DISBURSEMENT,
             data: {
                 amount: amount,
@@ -46,9 +46,18 @@ module.exports = {
         })
     },
 
+    messageForceEndEvent: (curEvent) => {
+        return ({
+            type: MessageTypeEnum.FORCE_END_EVENT,
+            data: {
+                curEvent: curEvent
+            }
+        })
+    },
+
 
     UIMessageUpdateBlockchain: {
-        type: MessageTypeEnum.UPDATE_BLOCKCHAIN  
+        type: MessageTypeEnum.UPDATE_BLOCKCHAIN
     },
 
     UIMessageUpdatePool: {
@@ -61,7 +70,10 @@ module.exports = {
 
     UIMessageDisbursement: {
         type: MessageTypeEnum.UI_DISBURSEMENT
-    }
+    },
+    UIMessageForceEndEvent: {
+        type: MessageTypeEnum.FORCE_END_EVENT,
+    },
 
 }
 
