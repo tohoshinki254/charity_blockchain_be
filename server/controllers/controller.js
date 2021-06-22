@@ -136,7 +136,7 @@ module.exports = {
 
     acceptEvent: (req, res, next) => {
         const eventId = req.body.address;
-        const targetEvent = event[eventId];
+        const targetEvent = event.get(eventId);
 
         const wallet = req.myWallet;
         const publicKey = wallet.keyPair.getPublic().toString(16);
