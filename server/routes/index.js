@@ -21,6 +21,7 @@ router.get('/blocks/:index', (req, res, next) => {
 // create-wallet
 // [body] name: name of creator
 router.post('/wallet', (req, res, next) => {
+  console.log("Create wallet")
   controller.createWallet(req, res, next);
 });
 
@@ -132,7 +133,8 @@ router.post('/event/end', authenticateEvent, (req, res, next) => {
 // check accepted
 // [headers] authorization: privateKey of wallet
 // [query] address: publicKey of event(project)
-router.get('/event/accepted', authenticateWallet, (req, res, next) => {
+router.post('/event/checkAccept', authenticateWallet, (req, res, next) => {
+  console.log("Here")
   controller.checkAccepted(req, res, next);
 });
 

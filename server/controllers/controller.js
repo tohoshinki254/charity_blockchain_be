@@ -139,7 +139,7 @@ module.exports = {
         const targetEvent = event.get(eventId);
 
         const wallet = req.myWallet;
-        const publicKey = wallet.keyPair.getPublic().toString(16);
+        const publicKey = wallet.keyPair.getPublic().encode("hex", false);
 
         if (targetEvent === undefined) {
             res.status(400).json({
@@ -165,9 +165,10 @@ module.exports = {
 
     checkAccepted: (req, res, next) => {
         try {
-            const { address } = req.query;
+            const address = req.body.address;
+            console.log(req.query.address);
             const wallet = req.myWallet;
-            const publicKey = wallet.keyPair.getPublic().toString(16);
+            const publicKey = wallet.keyPair.getPublic().encode("hex", false);
 
             const curEvent = event.get(address);
             const result = true;
