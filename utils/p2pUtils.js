@@ -173,12 +173,13 @@ module.exports = {
             switch (message.type) {
                 case MessageTypeEnum.UPDATE_BLOCKCHAIN:
                     let newBlockchain = message.data.blockchain;
-                    // let newPool = data.pool;
+                    let newPool = message.data.pool;
 
                     //TODO: Xử lý logic
-                    // if (isValidChain(newBlockchain)) {
-                    //     blockchain = newBlockchain;
-                    // }
+                    if (isValidChain(newBlockchain)) {
+                        blockchain = newBlockchain;
+                        pool = newPool;
+                    }
 
                     //Bắn yêu cầu client update thông tin mới
                     this.broadcastToUI(UIMessageUpdateBlockchain);
@@ -187,26 +188,32 @@ module.exports = {
                 case MessageTypeEnum.UPDATE_TRANSACTION_POOL:
                     let newPool = message.data.pool;
 
-                    // pool = newPool;
+                    pool = newPool;
 
                     this.broadcastToUI(UIMessageUpdatePool);
                     break;
                 case MessageTypeEnum.UI_ADD_EVENT:
-                    let newEvent = message.data.event;
+                    // let newEvent = message.data.event;
 
                     // event.set(event.address, newEvent);
+                    event = message.data.event;
 
                     this.broadcastToUI(UIMessageAddEvent);
                     break;
                 case MessageTypeEnum.DISBURSEMENT:
-                    let amount = message.data.amount;
-                    let currentEvent = message.data.curEvent;
-                    let pool = message.data.pool;
+                    // let amount = message.data.amount;
+                    // let currentEvent = message.data.curEvent;
+                    // let pool = message.data.pool;
+
+                    pool = message.data.pool;
+                    event = message.data.event;
+
 
                     this.broadcastToUI(UIMessageDisbursement);
                     break;
                 case MessageTypeEnum.FORCE_END_EVENT:
-                    let currentEvent1 = message.data.curEvent;
+                    // let currentEvent1 = message.data.curEvent;
+                    event = message.data.event
 
                     this.broadcastToUI(UIMessageForceEndEvent);
                     break;

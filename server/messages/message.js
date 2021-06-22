@@ -1,11 +1,12 @@
 const { MessageTypeEnum } = require("../../utils/constants");
-const { blockchain, pool } = require("../data");
+const { blockchain, pool, event } = require("../data");
 
 module.exports = {
     messageUpdateBlockchain: {
         type: MessageTypeEnum.UPDATE_BLOCKCHAIN,
         data: {
-            blockchain: blockchain
+            blockchain: blockchain,
+            pool: pool
         }
     },
 
@@ -29,8 +30,9 @@ module.exports = {
         return ({
             type: MessageTypeEnum.ACCEPT_EVENT,
             data: {
-                eventId: eventId,
-                publicKey: publicKey
+                event: event
+                // eventId: eventId,
+                // publicKey: publicKey
             }
         })
     },
@@ -39,9 +41,10 @@ module.exports = {
         return ({
             type: MessageTypeEnum.DISBURSEMENT,
             data: {
-                amount: amount,
-                curEvent: curEvent,
-                pool: pool
+                // amount: amount,
+                // curEvent: curEvent,
+                pool: pool,
+                event: event
             }
         })
     },
@@ -50,7 +53,7 @@ module.exports = {
         return ({
             type: MessageTypeEnum.FORCE_END_EVENT,
             data: {
-                curEvent: curEvent
+                event: event
             }
         })
     },
