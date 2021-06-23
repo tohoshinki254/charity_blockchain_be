@@ -186,9 +186,9 @@ module.exports = {
 
                     break;
                 case MessageTypeEnum.UPDATE_TRANSACTION_POOL:
-                    let newPool = message.data.pool;
+                    let newPool1 = message.data.pool;
 
-                    pool = newPool;
+                    pool = newPool1;
 
                     this.broadcastToUI(UIMessageUpdatePool);
                     break;
