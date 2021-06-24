@@ -199,26 +199,69 @@ module.exports = {
             }
 
             let donateHistory = [];
+            console.log("Get event donate history")
+            console.log(blockchain.chain)
 
             for(let i = 0; i < blockchain.chain.length; i++) {
                 for(let j = 0; j < blockchain.chain[i].data.length; j++) {
                     let transactions = blockchain.chain[i].data[j]
 
+                    console.log(transactions)
+
                     for(let k = 0; k < transactions.length; k++) {
                         if (transactions[k].senderAddress !== eventAddress) {
-                            let t = transactions[k].txOuts.filter(txOut => {
-                                txOut.address === eventAddress;
-                            })
+                            let t = [];
+                            for(let l = 0; l < transactions[k].txOuts.length; l++) {
+                                let lm = transactions[k].txOuts[l].address.localeCompare(eventAddress);
+                                if (lm == 0) {
+                                    t.push(transactions[k].txOuts[l]);
+                                }
+                            }
 
                             t.forEach(tx => {
                                 tx.senderAddress = transactions[k].senderAddress;
                                 tx.id = transactions[k].id;
                                 tx.timestamp = transactions[k].timestamp;
+                                tx.isSent = true;
                             })
 
                             donateHistory = donateHistory.concat(t);
                         }
                     }
+                }
+            }
+
+            console.log("pool");
+            console.log(pool);
+
+            for(let i = 0; i < pool.transactions.length; i++) {
+                console.log(pool.transactions[i]);
+                console.log(eventAddress);
+
+                if (pool.transactions[i].senderAddress !== eventAddress) {
+                    console.log("Here")
+                    console.log(pool.transactions[i].txOuts);
+
+                    let t = [];
+                    for(let j = 0; j < pool.transactions[i].txOuts.length; j++) {
+                        let lm = pool.transactions[i].txOuts[j].address.localeCompare(eventAddress);
+                        if (lm == 0) {
+                            t.push(pool.transactions[i].txOuts[j]);
+                        }
+
+                    }
+                  
+
+                    console.log("t = ");
+                    console.log(t);
+                    t.forEach(tx => {
+                        tx.senderAddress = pool.transactions[i].senderAddress;
+                        tx.id = pool.transactions[i].id;
+                        tx.timestamp = pool.transactions[i].timestamp;
+                        tx.isSent = false;
+                    })
+
+                    donateHistory = donateHistory.concat(t);
                 }
             }
 
@@ -272,7 +315,8 @@ module.exports = {
                 for(let j = 0; j < blockchain.chain[i].data.length; j++) {
                     let transactions = blockchain.chain[i].data[j]
                     for(let k = 0; k < transactions.length; k++) {
-                        if (transactions[k].senderAddress === eventAddress) {
+                        let isSame = transactions[k].senderAddress.localeCompare(eventAddress);
+                        if (isSame == 0) {
                             disbursementHistory.push({
                                 id: transactions[k].id,
                                 timestamp: transactions[k].timestamp,
