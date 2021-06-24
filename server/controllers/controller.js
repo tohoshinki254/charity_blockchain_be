@@ -78,7 +78,7 @@ module.exports = {
                 res.status(400).json({
                     message: 'amount must be a number'
                 });
-                return; 
+                return;
             }
 
             const transaction = wallet.addMoneyToWallet(amount);
@@ -202,16 +202,16 @@ module.exports = {
             console.log("Get event donate history")
             console.log(blockchain.chain)
 
-            for(let i = 0; i < blockchain.chain.length; i++) {
-                for(let j = 0; j < blockchain.chain[i].data.length; j++) {
+            for (let i = 0; i < blockchain.chain.length; i++) {
+                for (let j = 0; j < blockchain.chain[i].data.length; j++) {
                     let transactions = blockchain.chain[i].data[j]
 
                     console.log(transactions)
 
-                    for(let k = 0; k < transactions.length; k++) {
+                    for (let k = 0; k < transactions.length; k++) {
                         if (transactions[k].senderAddress !== eventAddress) {
                             let t = [];
-                            for(let l = 0; l < transactions[k].txOuts.length; l++) {
+                            for (let l = 0; l < transactions[k].txOuts.length; l++) {
                                 let lm = transactions[k].txOuts[l].address.localeCompare(eventAddress);
                                 if (lm == 0) {
                                     t.push(transactions[k].txOuts[l]);
@@ -235,7 +235,7 @@ module.exports = {
             console.log("pool");
             console.log(pool);
 
-            for(let i = 0; i < pool.transactions.length; i++) {
+            for (let i = 0; i < pool.transactions.length; i++) {
                 console.log(pool.transactions[i]);
                 console.log(eventAddress);
 
@@ -244,14 +244,14 @@ module.exports = {
                     console.log(pool.transactions[i].txOuts);
 
                     let t = [];
-                    for(let j = 0; j < pool.transactions[i].txOuts.length; j++) {
+                    for (let j = 0; j < pool.transactions[i].txOuts.length; j++) {
                         let lm = pool.transactions[i].txOuts[j].address.localeCompare(eventAddress);
                         if (lm == 0) {
                             t.push(pool.transactions[i].txOuts[j]);
                         }
 
                     }
-                  
+
 
                     console.log("t = ");
                     console.log(t);
@@ -300,6 +300,103 @@ module.exports = {
         }
     },
 
+    getAllEventDonateHistory: (req, res, next) => {
+        try {
+
+            let donateHistory = [];
+            console.log("Get all event donate history")
+            console.log(blockchain.chain)
+
+            for (let i = 0; i < blockchain.chain.length; i++) {
+                for (let j = 0; j < blockchain.chain[i].data.length; j++) {
+                    let transactions = blockchain.chain[i].data[j]
+
+                    for (let k = 0; k < transactions.length; k++) {
+                        // if (transactions[k].senderAddress !== eventAddress) {
+                        let t = [];
+                        for (let l = 0; l < transactions[k].txOuts.length; l++) {
+                            if (event.has(transactions[k].txOuts[l].address)) {
+                                t.push(transactions[k].txOuts[l]);
+                            }
+                        }
+
+                        t.forEach(tx => {
+                            tx.senderAddress = transactions[k].senderAddress;
+                            tx.id = transactions[k].id;
+                            tx.timestamp = transactions[k].timestamp;
+                            tx.name = event.get(eventAddress).name;
+                            tx.isSent = true;
+                        })
+
+                        donateHistory = donateHistory.concat(t);
+                        // }
+                    }
+                }
+            }
+
+            console.log("pool");
+            console.log(pool);
+
+            for (let i = 0; i < pool.transactions.length; i++) {
+                console.log(pool.transactions[i]);
+                console.log(eventAddress);
+
+                // if (pool.transactions[i].senderAddress !== eventAddress) {
+                console.log("Here")
+                console.log(pool.transactions[i].txOuts);
+
+                let t = [];
+                for (let j = 0; j < pool.transactions[i].txOuts.length; j++) {
+                    if (event.has(pool.transactions[i].txOuts[j].address)) {
+                        t.push(pool.transactions[i].txOuts[j]);
+                    }
+                }
+
+                t.forEach(tx => {
+                    tx.senderAddress = pool.transactions[i].senderAddress;
+                    tx.id = pool.transactions[i].id;
+                    tx.timestamp = pool.transactions[i].timestamp;
+                    tx.name = event.get(eventAddress).name;
+                    tx.isSent = false;
+                })
+
+                donateHistory = donateHistory.concat(t);
+                // }
+            }
+
+            res.status(200).json({
+                message: 'OK',
+                payload: {
+                    history: donateHistory
+                }
+            })
+
+            // const history = pool.filter(transact => {
+            //     for (let i = 0; i < transact.txOuts.length; i++) {
+            //         if (transact.txOuts[i].localeCompare(eventAddress)) {
+            //             return true;
+            //         }
+            //     }
+            //     return false;
+            // })
+
+            // const ret = history.map(transact => {
+            //     const moneyReceived = transact.txOuts.find(element => element.address.localeCompare(eventAddress) === true).amount;
+            //     return {
+            //         senderAddress: transact.senderAddress,
+            //         moneyReceived: moneyReceived,
+            //         timestamp: transact.timestamp
+            //     }
+            // });
+            // return ret;
+        }
+        catch (e) {
+            res.status(500).json({
+                message: e.message
+            })
+        }
+    },
+
     getEventDisbursementHistory: (req, res, next) => {
         try {
             const eventAddress = req.query.address;
@@ -313,10 +410,10 @@ module.exports = {
 
             let disbursementHistory = [];
 
-            for(let i = 0; i < blockchain.chain.length; i++) {
-                for(let j = 0; j < blockchain.chain[i].data.length; j++) {
+            for (let i = 0; i < blockchain.chain.length; i++) {
+                for (let j = 0; j < blockchain.chain[i].data.length; j++) {
                     let transactions = blockchain.chain[i].data[j]
-                    for(let k = 0; k < transactions.length; k++) {
+                    for (let k = 0; k < transactions.length; k++) {
                         let isSame = transactions[k].senderAddress.localeCompare(eventAddress);
                         if (isSame == 0) {
                             disbursementHistory.push({
@@ -415,7 +512,7 @@ module.exports = {
                     }
                     console.log("D");
                     broadcast(messageUpdateTransactionPool);
-        
+
                     res.status(200).json({
                         message: 'OK'
                     });
@@ -430,7 +527,7 @@ module.exports = {
                 message: e.message
             });
         }
-    }, 
+    },
 
     getTransactionsByPrivateKey: (req, res, next) => {
         try {
@@ -616,7 +713,7 @@ module.exports = {
         try {
             const { id } = req.query;
             const transactions = [...convertTransactionFromChain(blocks, event), ...convertTransactionInPool(pool.transactions, event)];
-            
+
             transactions.forEach((tx) => {
                 if (tx.id === id) {
                     res.status(200).json({
@@ -640,12 +737,12 @@ module.exports = {
     //---------------------------------------------------
     //P2P
     //---------------------------------------------------
-    
+
     getPeers: (req, res, next) => {
         try {
             console.log("Get peers");
             let list = peerHttpPortList;
-    
+
             res.status(200).send(list);
         } catch (e) {
             res.status(500).json({

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/controller');
+const { pool } = require('../data');
 const { authenticateWallet, authenticateEvent } = require('../middlewares/authenticate');
 
 router.get('/', (req, res, next) => {
@@ -17,6 +18,15 @@ router.get('/blocks', (req, res, next) => {
 router.get('/blocks/:index', (req, res, next) => {
   controller.getBlockByIndex(req, res, next);
 });
+
+router.get('/pool', (req, res, next) => {
+  return res.status(200).json({
+    message: 'OK',
+    payload: {
+      pool: pool
+    }
+  })
+})
 
 // create-wallet
 // [body] name: name of creator
@@ -109,6 +119,12 @@ router.post('/event/accept', authenticateWallet, (req, res, next) => {
 // [query] address: address of event(project)
 router.get('/event/donate', (req, res, next) => {
   controller.getEventDonateHistory(req, res, next);
+});
+
+// get all event donate history
+// [query]: none
+router.get('/event/allDonate', (req, res, next) => {
+  controller.getAllEventDonateHistory(req, res, next);
 });
 
 // get event disbursement history
