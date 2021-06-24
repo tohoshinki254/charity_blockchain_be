@@ -10,11 +10,11 @@ class Transaction {
     }
 
     hashData = () => {
-        const txInContent = transaction.txIns
+        const txInContent = this.txIns
             .map((txIn) => txIn.txOutId + txIn.txOutIndex)
             .reduce((a, b) => a + b, '');
     
-        const txOutContent = transaction.txOuts
+        const txOutContent = this.txOuts
             .map((txOut) => txOut.address + txOut.amount)
             .reduce((a, b) => a + b, '');
 

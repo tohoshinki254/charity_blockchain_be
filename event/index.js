@@ -87,6 +87,9 @@ class Event {
             });
 
             const disbursement = new Transaction(this.address, txIns, [txRemain]);
+            this.signDisbursement(disbursement, unspentTxOuts);
+            disbursement.hashData();
+            
             return disbursement;
         } else {
             throw new Error('You are not enough money to disburse');

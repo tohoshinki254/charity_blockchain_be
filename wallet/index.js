@@ -64,9 +64,11 @@ class Wallet {
             });
 
             const transaction = new Transaction(this.address, txIns, [txOut, txRemain]);
-            this.signTransaction(transaction);
             transaction.hashData();
+            console.log(transaction);
+            this.signTransaction(transaction, unspentTxOuts);
             
+            console.log(transaction);
             return transaction;
         } else {
             throw new Error('You are not enough money to send.');
@@ -90,7 +92,7 @@ class Wallet {
             }
 
             txIn.signature = this.keyPair.sign(transaction.hashData());
-        })
+        });
     }
 }
 

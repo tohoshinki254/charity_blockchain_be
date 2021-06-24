@@ -271,7 +271,6 @@ module.exports = {
             }
 
             const disbursement = curEvent.createDisbursement(amount, unspentTxOuts);
-            curEvent.signDisbursement(disbursement);
 
             pool.addTransaction(disbursement, unspentTxOuts);
 
@@ -318,16 +317,17 @@ module.exports = {
                 if (receiptEvent.endDate < current) {
                     receiptEvent.endEvent();
                 } else {
+                    console.log("A");
                     const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts);
-        
+                    console.log("B");
                     pool.addTransaction(transaction, unspentTxOuts);
-        
+                    console.log("C");
                     const validTransactions = pool.getValidTransaction();
                     if (validTransactions.length >= 10) {
                         const newBlock = blockchain.addBlock(validTransactions);
                         pool.clearTransaction(unspentTxOuts);
                     }
-
+                    console.log("D");
                     broadcast(messageUpdateTransactionPool);
         
                     res.status(200).json({
