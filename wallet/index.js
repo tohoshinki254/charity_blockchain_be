@@ -63,7 +63,7 @@ class Wallet {
                 return txIn;
             });
 
-            const transaction = new Transaction(this.address, txIns, [txOut, txRemain]);
+            const transaction = new Transaction(this.address, txIns, [txOut, txRemain], amount);
             transaction.hashData();
             console.log(transaction);
             this.signTransaction(transaction, unspentTxOuts);
@@ -77,7 +77,7 @@ class Wallet {
 
     addMoneyToWallet = (amount) => {
         const txOut = new TxOut(this.address, amount);
-        const transaction = new Transaction(null, [], [txOut]);
+        const transaction = new Transaction(null, [], [txOut], amount);
         return transaction;
     }
 

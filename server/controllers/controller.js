@@ -171,7 +171,7 @@ module.exports = {
             const publicKey = wallet.keyPair.getPublic().encode("hex", false);
 
             const curEvent = event.get(address);
-            const result = true;
+            let result = true;
             if (!curEvent.acceptPeople.has(publicKey)) {
                 result = false;
             }
@@ -198,24 +198,55 @@ module.exports = {
                 });
             }
 
-            const history = pool.filter(transact => {
-                for (let i = 0; i < transact.txOuts.length; i++) {
-                    if (transact.txOuts[i].localeCompare(eventAddress)) {
-                        return true;
+            let donateHistory = [];
+
+            for(let i = 0; i < blockchain.chain.length; i++) {
+                for(let j = 0; j < blockchain.chain[i].data.length; j++) {
+                    let transactions = blockchain.chain[i].data[j]
+
+                    for(let k = 0; k < transactions.length; k++) {
+                        if (transactions[k].senderAddress !== eventAddress) {
+                            let t = transactions[k].txOuts.filter(txOut => {
+                                txOut.address === eventAddress;
+                            })
+
+                            t.forEach(tx => {
+                                tx.senderAddress = transactions[k].senderAddress;
+                                tx.id = transactions[k].id;
+                                tx.timestamp = transactions[k].timestamp;
+                            })
+
+                            donateHistory = donateHistory.concat(t);
+                        }
                     }
                 }
-                return false;
+            }
+
+            res.status(200).json({
+                message: 'OK',
+                payload: {
+                    history: donateHistory
+                }
             })
 
-            const ret = history.map(transact => {
-                const moneyReceived = transact.txOuts.find(element => element.address.localeCompare(eventAddress) === true).amount;
-                return {
-                    senderAddress: transact.senderAddress,
-                    moneyReceived: moneyReceived,
-                    timestamp: transact.timestamp
-                }
-            });
-            return ret;
+            // const history = pool.filter(transact => {
+            //     for (let i = 0; i < transact.txOuts.length; i++) {
+            //         if (transact.txOuts[i].localeCompare(eventAddress)) {
+            //             return true;
+            //         }
+            //     }
+            //     return false;
+            // })
+
+            // const ret = history.map(transact => {
+            //     const moneyReceived = transact.txOuts.find(element => element.address.localeCompare(eventAddress) === true).amount;
+            //     return {
+            //         senderAddress: transact.senderAddress,
+            //         moneyReceived: moneyReceived,
+            //         timestamp: transact.timestamp
+            //     }
+            // });
+            // return ret;
         }
         catch (e) {
             res.status(500).json({
@@ -235,20 +266,29 @@ module.exports = {
                 });
             }
 
-            const history = pool.filter(transact => {
-                transact.senderAddress.localeCompare(eventAddress) === true;
-            })
+            let disbursementHistory = [];
 
-            const ret = history.map(transact => {
-                const receiverInfo = transact.txOuts.find(element => element.address.localeCompare(eventAddress) === false);
-                return {
-                    receiverAddress: receiverInfo.address,
-                    moneySent: receiverInfo.amount,
-                    timestamp: transact.timestamp
+            for(let i = 0; i < blockchain.chain.length; i++) {
+                for(let j = 0; j < blockchain.chain[i].data.length; j++) {
+                    let transactions = blockchain.chain[i].data[j]
+                    for(let k = 0; k < transactions.length; k++) {
+                        if (transactions[k].senderAddress === eventAddress) {
+                            disbursementHistory.push({
+                                id: transactions[k].id,
+                                timestamp: transactions[k].timestamp,
+                                amount: transactions[k].amount
+                            })
+                        }
+                    }
                 }
-            });
+            }
 
-            return ret;
+            res.status(200).json({
+                message: 'OK',
+                payload: {
+                    history: disbursementHistory
+                }
+            })
         }
         catch (e) {
             res.status(500).json({

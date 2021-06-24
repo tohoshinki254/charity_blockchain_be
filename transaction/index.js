@@ -1,12 +1,13 @@
 const { hash } = require('../utils/commonUtils');
 
 class Transaction {
-    constructor(senderAddress, txIns, txOuts) {
+    constructor(senderAddress, txIns, txOuts, amount) {
         this.id = null;
         this.senderAddress = senderAddress;
         this.txIns = txIns;
         this.txOuts = txOuts;
         this.timestamp = Date.now();
+        this.amount = amount;
     }
 
     hashData = () => {

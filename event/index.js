@@ -86,7 +86,7 @@ class Event {
                 return txIn;
             });
 
-            const disbursement = new Transaction(this.address, txIns, [txRemain]);
+            const disbursement = new Transaction(this.address, txIns, [txRemain], amount);
             this.signDisbursement(disbursement, unspentTxOuts);
             disbursement.hashData();
             
