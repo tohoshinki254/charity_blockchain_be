@@ -320,11 +320,12 @@ module.exports = {
                             }
                         }
 
+
                         t.forEach(tx => {
                             tx.senderAddress = transactions[k].senderAddress;
                             tx.id = transactions[k].id;
                             tx.timestamp = transactions[k].timestamp;
-                            tx.name = event.get(eventAddress).name;
+                            tx.name = event.get(tx.address).name;
                             tx.isSent = true;
                         })
 
@@ -339,7 +340,7 @@ module.exports = {
 
             for (let i = 0; i < pool.transactions.length; i++) {
                 console.log(pool.transactions[i]);
-                console.log(eventAddress);
+                // console.log(eventAddress);
 
                 // if (pool.transactions[i].senderAddress !== eventAddress) {
                 console.log("Here")
@@ -352,11 +353,16 @@ module.exports = {
                     }
                 }
 
+                console.log(t);
+
                 t.forEach(tx => {
                     tx.senderAddress = pool.transactions[i].senderAddress;
                     tx.id = pool.transactions[i].id;
                     tx.timestamp = pool.transactions[i].timestamp;
-                    tx.name = event.get(eventAddress).name;
+
+                
+
+                    tx.name = event.get(tx.address).name;
                     tx.isSent = false;
                 })
 
@@ -370,25 +376,6 @@ module.exports = {
                     history: donateHistory
                 }
             })
-
-            // const history = pool.filter(transact => {
-            //     for (let i = 0; i < transact.txOuts.length; i++) {
-            //         if (transact.txOuts[i].localeCompare(eventAddress)) {
-            //             return true;
-            //         }
-            //     }
-            //     return false;
-            // })
-
-            // const ret = history.map(transact => {
-            //     const moneyReceived = transact.txOuts.find(element => element.address.localeCompare(eventAddress) === true).amount;
-            //     return {
-            //         senderAddress: transact.senderAddress,
-            //         moneyReceived: moneyReceived,
-            //         timestamp: transact.timestamp
-            //     }
-            // });
-            // return ret;
         }
         catch (e) {
             res.status(500).json({
