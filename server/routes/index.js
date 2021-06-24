@@ -123,7 +123,7 @@ router.get('/event/donate', (req, res, next) => {
 
 // get all event donate history
 // [query]: none
-router.get('/event/allDonate', (req, res, next) => {
+router.get('/donations', (req, res, next) => {
   controller.getAllEventDonateHistory(req, res, next);
 });
 
