@@ -62,7 +62,7 @@ module.exports = {
             message: 'OK',
             payload: {
                 address: wallet.getAddress(),
-                balance: wallet.getBalance(unspentTxOuts),
+                balance: wallet.getBalance(unspentTxOuts, pool),
                 name: wallet.getName()
             }
         });

@@ -18,12 +18,20 @@ class Wallet {
         return this.name;
     }
 
-    getBalance = (unspentTxOuts) => {
+    getBalance = (unspentTxOuts, pool) => {
         let balance = 0;
 
         for (let [key, val] of unspentTxOuts) {
             if (val.address === this.address) {
                 balance += val.amount;
+            }
+        }
+
+        for (let i = 0; i < pool.transactions.length; i++) {
+            for (let j = 0; j < pool.transactions[i].txOuts.length; j++) {
+                if (pool.transactions[i].txOuts[j].address.localeCompare(this.address) == 0) {
+                    balance = balance + pool.transactions[i].txOuts[j].amount;
+                }
             }
         }
 
