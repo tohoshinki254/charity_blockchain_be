@@ -222,6 +222,7 @@ module.exports = {
                                 tx.senderAddress = transactions[k].senderAddress;
                                 tx.id = transactions[k].id;
                                 tx.timestamp = transactions[k].timestamp;
+                                tx.name = event.get(eventAddress).name;
                                 tx.isSent = true;
                             })
 
@@ -258,6 +259,7 @@ module.exports = {
                         tx.senderAddress = pool.transactions[i].senderAddress;
                         tx.id = pool.transactions[i].id;
                         tx.timestamp = pool.transactions[i].timestamp;
+                        tx.name = event.get(eventAddress).name;
                         tx.isSent = false;
                     })
 
@@ -359,7 +361,7 @@ module.exports = {
             pool.addTransaction(disbursement, unspentTxOuts);
 
             const validTransactions = pool.getValidTransaction();
-            if (validTransactions.length >= 10) {
+            if (validTransactions.length >= 3) {
                 const newBlock = blockchain.addBlock(validTransactions);
                 pool.clearTransaction(unspentTxOuts);
             }
@@ -407,7 +409,7 @@ module.exports = {
                     pool.addTransaction(transaction, unspentTxOuts);
                     console.log("C");
                     const validTransactions = pool.getValidTransaction();
-                    if (validTransactions.length >= 10) {
+                    if (validTransactions.length >= 3) {
                         const newBlock = blockchain.addBlock(validTransactions);
                         pool.clearTransaction(unspentTxOuts);
                     }
