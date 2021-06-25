@@ -204,31 +204,32 @@ module.exports = {
 
             for (let i = 0; i < blockchain.chain.length; i++) {
                 for (let j = 0; j < blockchain.chain[i].data.length; j++) {
-                    let transactions = blockchain.chain[i].data[j]
+                    let transaction = blockchain.chain[i].data[j]
 
-                    console.log(transactions)
+                    console.log("blockchain - ", i, " - ", j);
+                    console.log(transaction);
 
-                    for (let k = 0; k < transactions.length; k++) {
-                        if (transactions[k].senderAddress !== eventAddress) {
-                            let t = [];
-                            for (let l = 0; l < transactions[k].txOuts.length; l++) {
-                                let lm = transactions[k].txOuts[l].address.localeCompare(eventAddress);
-                                if (lm == 0) {
-                                    t.push(transactions[k].txOuts[l]);
-                                }
+                    // for (let k = 0; k < transaction.length; k++) {
+                        // if (transactions[k].senderAddress !== eventAddress) {
+                        let t = [];
+                        for (let l = 0; l < transaction.txOuts.length; l++) {
+                            if (event.has(transaction.txOuts[l].address)) {
+                                t.push(transaction.txOuts[l]);
                             }
-
-                            t.forEach(tx => {
-                                tx.senderAddress = transactions[k].senderAddress;
-                                tx.id = transactions[k].id;
-                                tx.timestamp = transactions[k].timestamp;
-                                tx.name = event.get(eventAddress).name;
-                                tx.isSent = true;
-                            })
-
-                            donateHistory = donateHistory.concat(t);
                         }
-                    }
+
+
+                        t.forEach(tx => {
+                            tx.senderAddress = transaction.senderAddress;
+                            tx.id = transaction.id;
+                            tx.timestamp = transaction.timestamp;
+                            tx.name = event.get(tx.address).name;
+                            tx.isSent = true;
+                        })
+
+                        donateHistory = donateHistory.concat(t);
+                        // }
+                    // }
                 }
             }
 
@@ -309,29 +310,32 @@ module.exports = {
 
             for (let i = 0; i < blockchain.chain.length; i++) {
                 for (let j = 0; j < blockchain.chain[i].data.length; j++) {
-                    let transactions = blockchain.chain[i].data[j]
+                    let transaction = blockchain.chain[i].data[j]
 
-                    for (let k = 0; k < transactions.length; k++) {
+                    console.log("blockchain - ", i, " - ", j);
+                    console.log(transaction);
+
+                    // for (let k = 0; k < transaction.length; k++) {
                         // if (transactions[k].senderAddress !== eventAddress) {
                         let t = [];
-                        for (let l = 0; l < transactions[k].txOuts.length; l++) {
-                            if (event.has(transactions[k].txOuts[l].address)) {
-                                t.push(transactions[k].txOuts[l]);
+                        for (let l = 0; l < transaction.txOuts.length; l++) {
+                            if (event.has(transaction.txOuts[l].address)) {
+                                t.push(transaction.txOuts[l]);
                             }
                         }
 
 
                         t.forEach(tx => {
-                            tx.senderAddress = transactions[k].senderAddress;
-                            tx.id = transactions[k].id;
-                            tx.timestamp = transactions[k].timestamp;
+                            tx.senderAddress = transaction.senderAddress;
+                            tx.id = transaction.id;
+                            tx.timestamp = transaction.timestamp;
                             tx.name = event.get(tx.address).name;
                             tx.isSent = true;
                         })
 
                         donateHistory = donateHistory.concat(t);
                         // }
-                    }
+                    // }
                 }
             }
 
