@@ -445,7 +445,7 @@ module.exports = {
             pool.addTransaction(disbursement, unspentTxOuts);
 
             const validTransactions = pool.getValidTransaction();
-            if (validTransactions.length >= 3) {
+            if (validTransactions.length >= 2) {
                 const newBlock = blockchain.addBlock(validTransactions);
                 pool.clearTransaction(unspentTxOuts);
             }
@@ -493,7 +493,7 @@ module.exports = {
                     pool.addTransaction(transaction, unspentTxOuts);
                     console.log("C");
                     const validTransactions = pool.getValidTransaction();
-                    if (validTransactions.length >= 3) {
+                    if (validTransactions.length >= 2) {
                         const newBlock = blockchain.addBlock(validTransactions);
                         pool.clearTransaction(unspentTxOuts);
                     }
