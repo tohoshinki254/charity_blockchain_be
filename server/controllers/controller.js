@@ -149,6 +149,19 @@ module.exports = {
             return;
         }
 
+        if (targetEvent.status === 1) {
+            res.status(400).json({
+                message: 'Event has been accepted'
+            });
+            return;
+        }
+        else if (targetEvent.status === 2) {
+            res.status(400).json({
+                message: 'Event has been stopped'
+            });
+            return;
+        }
+
         let flag = targetEvent.acceptEvent(publicKey);
         if (flag === false) {
             res.status(400).json({

@@ -175,7 +175,7 @@ module.exports = {
                     let newBlockchain = message.data.blockchain;
                     let newPool = message.data.pool;
 
-                    //TODO: Xử lý logic
+                    // Xử lý logic
                     if (isValidChain(newBlockchain)) {
                         blockchain = newBlockchain;
                         pool = newPool;
