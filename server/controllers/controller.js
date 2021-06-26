@@ -85,6 +85,14 @@ module.exports = {
             pool.addTransaction(transaction, unspentTxOuts);
 
             const validTransactions = pool.getValidTransaction();
+            validTransactions.forEach(tx => {
+                tx.txOuts.forEach(txOut => {                         
+                    if (event.get(txOut.address) !== undefined) {                                 
+                        event.get(txOut.address).amountDonated = event.get(txOut.address).amountDonated + txOut.amount;
+                    }
+                })
+            })
+
             const newBlock = blockchain.addBlock(validTransactions);
             pool.clearTransaction(unspentTxOuts);
 
@@ -560,7 +568,7 @@ module.exports = {
     getTransactionsByPrivateKey: (req, res, next) => {
         try {
             const wallet = req.myWallet;
-            const transactions = getMyTransactions(wallet.address, blockchain.chain, event);
+            const transactions = getMyTransactions(wallet.address, blockchain.chain, event, pool);
 
             res.status(200).json({
                 message: 'OK',
@@ -647,7 +655,7 @@ module.exports = {
             for (let [key, val] of event) {
                 const curEvent = {
                     event: val,
-                    percentAccepted: val.acceptPeople.size / accountMap.size
+                    percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size)
                 };
 
                 result.push(curEvent);
@@ -676,7 +684,7 @@ module.exports = {
                 if (val.creator === publicKey) {
                     const curEvent = {
                         event: val,
-                        percentAccepted: val.acceptPeople.size / accountMap.size
+                        percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size)
                     };
 
                     result.push(curEvent);
@@ -722,7 +730,7 @@ module.exports = {
                 res.status(200).json({
                     message: 'OK',
                     event: curEvent,
-                    percentAccepted: curEvent.acceptPeople.size / accountMap.size
+                    percentAccepted: (curEvent.status >= 1 ? 1 : curEvent.acceptPeople.size / accountMap.size)
                 });
                 return;
             }

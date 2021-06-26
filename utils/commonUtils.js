@@ -79,7 +79,7 @@ const convertTransactionInPool = (txsInPool, event) => {
     }));
 };
 
-const getMyTransactions = (publicKey, chain, event) => {
+const getMyTransactions = (publicKey, chain, event, pool) => {
     let results = [];
     chain.forEach(block => {
         const transactions = block.data
@@ -92,11 +92,26 @@ const getMyTransactions = (publicKey, chain, event) => {
                 id: tx.id,
                 block: block.index,
                 status: SUCCESS_TRANSACTION,
-                nameEvent: event.get(tx.txOuts[0].address).name
+                nameEvent: event.get(tx.txOuts[0].address).name,
+                isSent: true
             }));
 
         results = [...results, ...transactions];
     });
+
+    let transactInPool = pool.transactions.filter(tx => tx.senderAddress === publicKey)
+    .map(tx => ({
+        senderAddress: tx.senderAddress,
+        receiverAddress: tx.txOuts[0].address,
+        amount: tx.txOuts[0].amount,
+        timeStamp: tx.timeStamp,
+        id: tx.id,
+        status: WAITING_CONFIRM,
+        nameEvent: event.get(tx.txOuts[0].address).name,
+        isSent: false
+    }));
+    results = [...results, ...transactInPool];
+
     return results;
 }
 
