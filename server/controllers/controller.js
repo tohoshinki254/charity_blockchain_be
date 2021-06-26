@@ -116,6 +116,7 @@ module.exports = {
             const end = endDate.split("/");
 
             const newEvent = new Event(address, name, description, creator, creatorName, new Date(start[2], start[1] - 1, start[0]), new Date(end[2], end[1] - 1, end[0]));
+            newEvent.acceptEvent(creator);
             event.set(address, newEvent);
 
             broadcast(messageAddEvents(event));
