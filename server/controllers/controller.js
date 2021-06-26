@@ -5,6 +5,7 @@ const Event = require('../../event');
 const { connectToPeers, broadcast } = require('../../utils/p2pUtils');
 const { MessageTypeEnum } = require('../../utils/constants');
 const { messageUpdateBlockchain, messageUpdateTransactionPool, messageAddEvents, messageDisbursement, messageForceEndEvent } = require('../messages/message');
+const { getTotalDisbursement } = require('../../utils/chainUtils');
 
 module.exports = {
     getBlocks: (req, res, next) => {
@@ -649,22 +650,7 @@ module.exports = {
         }
     },
 
-    getTotalDisbursement: (eventAddress) => {
-        let total = 0;
-
-        for (let i = 0; i < blockchain.chain.length; i++) {
-            for (let j = 0; j < blockchain.chain[i].data.length; j++) {
-                let transactions = blockchain.chain[i].data[j]
-                for (let k = 0; k < transactions.length; k++) {
-                    let isSame = transactions[k].senderAddress.localeCompare(eventAddress);
-                    if (isSame == 0) {
-                        total = total + transactions[k].amount;
-                    }
-                }
-            }
-        }
-        return total;
-    },
+    
 
     getAllEvents: (req, res, next) => {
         try {
@@ -673,7 +659,7 @@ module.exports = {
                 const curEvent = {
                     event: val,
                     percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size),
-                    totalDisbursement: this.getTotalDisbursement(val.creator)
+                    totalDisbursement: getTotalDisbursement(val.creator)
                 };
 
                 result.push(curEvent);
@@ -703,7 +689,7 @@ module.exports = {
                     const curEvent = {
                         event: val,
                         percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size),
-                        totalDisbursement: this.getTotalDisbursement(val.creator)
+                        totalDisbursement: getTotalDisbursement(val.creator)
                     };
 
                     result.push(curEvent);
@@ -750,7 +736,7 @@ module.exports = {
                     message: 'OK',
                     event: curEvent,
                     percentAccepted: (curEvent.status >= 1 ? 1 : curEvent.acceptPeople.size / accountMap.size),
-                    totalDisbursement: this.getTotalDisbursement(curEvent.creator)
+                    totalDisbursement: getTotalDisbursement(curEvent.creator)
                 });
                 return;
             }

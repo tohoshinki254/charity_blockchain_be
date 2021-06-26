@@ -2,6 +2,7 @@ const { getKeyPairFromPrivateKey, verifyUnspentTxOut } = require("../utils/commo
 const TxIn = require('../transaction/TxIn');
 const TxOut = require('../transaction/TxOut');
 const Transaction = require('../transaction/index');
+const { pool } = require("../server/data");
 
 class Wallet {
     constructor(privateKey, name) {
@@ -79,7 +80,13 @@ class Wallet {
             console.log(transaction);
             return transaction;
         } else {
-            throw new Error('You are not enough money to send.');
+            let balance = this.getBalance(unspentTxOuts, pool);
+            if (balance >= amount) {
+                throw new Error("You have enough money, but please wait for your transactions complete")
+            }
+            else {
+                throw new Error('You are not enough money to send.');
+            }
         }
     }
 
