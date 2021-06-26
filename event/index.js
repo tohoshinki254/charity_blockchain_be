@@ -2,6 +2,7 @@ const { event, accountMap } = require("../server/data/index");
 const Transaction = require("../transaction");
 const TxIn = require("../transaction/TxIn");
 const TxOut = require("../transaction/TxOut");
+const { verifyUnspentTxOut } = require("../utils/commonUtils");
 
 class Event {
     constructor(address, name, description, creator, creatorName, startDate, endDate) {
