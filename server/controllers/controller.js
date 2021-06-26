@@ -488,6 +488,13 @@ module.exports = {
 
             const receiptEvent = event.get(receiptAddress);
             if (receiptEvent !== undefined && receiptEvent !== null) {
+                
+                if (receiptEvent.status !== 1) {
+                    res.status(400).json({
+                        message: 'Event has not accepted yet'
+                    })
+                }
+
                 const current = new Date();
                 if (receiptEvent.endDate < current) {
                     receiptEvent.endEvent();
