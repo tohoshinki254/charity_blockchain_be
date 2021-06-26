@@ -465,9 +465,9 @@ module.exports = {
             const validTransactions = pool.getValidTransaction();
             if (validTransactions.length >= 2) {
                 validTransactions.forEach(tx => {
-                    tx.txOuts.forEach(txOut => {
-                        if (event.get(txOut.address) !== undefined) {
-                            event.amountDonated = event.amountDonated + txOut.amount;
+                    tx.txOuts.forEach(txOut => {                         
+                        if (event.get(txOut.address) !== undefined) {                                 
+                            event.get(txOut.address).amountDonated = event.get(txOut.address).amountDonated + txOut.amount;
                         }
                     })
                 })
@@ -528,9 +528,9 @@ module.exports = {
                     const validTransactions = pool.getValidTransaction();
                     if (validTransactions.length >= 2) {
                         validTransactions.forEach(tx => {
-                            tx.txOuts.forEach(txOut => {
-                                if (event.get(txOut.address) !== undefined) {
-                                    event.amountDonated = event.amountDonated + txOut.amount;
+                            tx.txOuts.forEach(txOut => {                         
+                                if (event.get(txOut.address) !== undefined) {                                 
+                                    event.get(txOut.address).amountDonated = event.get(txOut.address).amountDonated + txOut.amount;
                                 }
                             })
                         })
