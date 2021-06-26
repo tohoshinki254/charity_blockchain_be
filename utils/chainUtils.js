@@ -1,4 +1,3 @@
-const { blockchain } = require('../server/data');
 const { createGenesisBlock, hashBlock } = require('./blockUtils');
 
 const isValidChain = (chain) => {
@@ -17,7 +16,7 @@ const isValidChain = (chain) => {
     return true;
 }
 
-const getTotalDisbursement = (eventAddress) => {
+const getTotalDisbursement = (eventAddress, blockchain) => {
     let total = 0;
 
     for (let i = 0; i < blockchain.chain.length; i++) {

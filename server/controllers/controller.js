@@ -659,7 +659,7 @@ module.exports = {
                 const curEvent = {
                     event: val,
                     percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size),
-                    totalDisbursement: getTotalDisbursement(val.creator)
+                    totalDisbursement: getTotalDisbursement(val.creator, blockchain)
                 };
 
                 result.push(curEvent);
@@ -689,7 +689,7 @@ module.exports = {
                     const curEvent = {
                         event: val,
                         percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size),
-                        totalDisbursement: getTotalDisbursement(val.creator)
+                        totalDisbursement: getTotalDisbursement(val.creator, blockchain)
                     };
 
                     result.push(curEvent);
@@ -736,7 +736,7 @@ module.exports = {
                     message: 'OK',
                     event: curEvent,
                     percentAccepted: (curEvent.status >= 1 ? 1 : curEvent.acceptPeople.size / accountMap.size),
-                    totalDisbursement: getTotalDisbursement(curEvent.creator)
+                    totalDisbursement: getTotalDisbursement(curEvent.creator,blockchain)
                 });
                 return;
             }
