@@ -649,13 +649,31 @@ module.exports = {
         }
     },
 
+    getTotalDisbursement: (eventAddress) => {
+        let total = 0;
+
+        for (let i = 0; i < blockchain.chain.length; i++) {
+            for (let j = 0; j < blockchain.chain[i].data.length; j++) {
+                let transactions = blockchain.chain[i].data[j]
+                for (let k = 0; k < transactions.length; k++) {
+                    let isSame = transactions[k].senderAddress.localeCompare(eventAddress);
+                    if (isSame == 0) {
+                        total = total + transactions[k].amount;
+                    }
+                }
+            }
+        }
+        return total;
+    },
+
     getAllEvents: (req, res, next) => {
         try {
             let result = [];
             for (let [key, val] of event) {
                 const curEvent = {
                     event: val,
-                    percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size)
+                    percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size),
+                    totalDisbursement: this.getTotalDisbursement(val.creator)
                 };
 
                 result.push(curEvent);
@@ -684,7 +702,8 @@ module.exports = {
                 if (val.creator === publicKey) {
                     const curEvent = {
                         event: val,
-                        percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size)
+                        percentAccepted: (val.status >= 1 ? 1 : val.acceptPeople.size / accountMap.size),
+                        totalDisbursement: this.getTotalDisbursement(val.creator)
                     };
 
                     result.push(curEvent);
@@ -730,7 +749,8 @@ module.exports = {
                 res.status(200).json({
                     message: 'OK',
                     event: curEvent,
-                    percentAccepted: (curEvent.status >= 1 ? 1 : curEvent.acceptPeople.size / accountMap.size)
+                    percentAccepted: (curEvent.status >= 1 ? 1 : curEvent.acceptPeople.size / accountMap.size),
+                    totalDisbursement: this.getTotalDisbursement(curEvent.creator)
                 });
                 return;
             }
