@@ -464,6 +464,14 @@ module.exports = {
 
             const validTransactions = pool.getValidTransaction();
             if (validTransactions.length >= 2) {
+                validTransactions.forEach(tx => {
+                    tx.txOuts.forEach(txOut => {
+                        if (event.get(txOut.address) !== undefined) {
+                            event.amountDonated = event.amountDonated + txOut.amount;
+                        }
+                    })
+                })
+
                 const newBlock = blockchain.addBlock(validTransactions);
                 pool.clearTransaction(unspentTxOuts);
             }
@@ -519,6 +527,14 @@ module.exports = {
                     console.log("C");
                     const validTransactions = pool.getValidTransaction();
                     if (validTransactions.length >= 2) {
+                        validTransactions.forEach(tx => {
+                            tx.txOuts.forEach(txOut => {
+                                if (event.get(txOut.address) !== undefined) {
+                                    event.amountDonated = event.amountDonated + txOut.amount;
+                                }
+                            })
+                        })
+
                         const newBlock = blockchain.addBlock(validTransactions);
                         pool.clearTransaction(unspentTxOuts);
                     }
