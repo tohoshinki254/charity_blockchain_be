@@ -21,6 +21,10 @@ const getKeyPairFromPrivateKey = (privateKey) => {
     return ec.keyFromPrivate(privateKey, "hex");
 };
 
+const getKeyPairFromPublicKey = (publicKey) => {
+    return ec.keyFromPublic(publicKey, "hex");
+}
+
 const verifyUnspentTxOut = (id, address, unspentTxOuts) => {
     if (unspentTxOuts.get(id).address === address) {
         return true;
@@ -120,6 +124,7 @@ module.exports = {
     generateId,
     generateKeyPair,
     getKeyPairFromPrivateKey,
+    getKeyPairFromPublicKey,
     verifyUnspentTxOut,
     verifySignature,
     verifyTransaction,

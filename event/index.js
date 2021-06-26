@@ -2,7 +2,7 @@ const { event, accountMap } = require("../server/data/index");
 const Transaction = require("../transaction");
 const TxIn = require("../transaction/TxIn");
 const TxOut = require("../transaction/TxOut");
-const { verifyUnspentTxOut } = require("../utils/commonUtils");
+const { verifyUnspentTxOut, getKeyPairFromPublicKey } = require("../utils/commonUtils");
 
 class Event {
     constructor(address, name, description, creator, creatorName, startDate, endDate) {
@@ -107,7 +107,7 @@ class Event {
                 throw new Error('Transaction address is not match.');
             }
 
-            txIn.signature = this.keyPair.sign(transaction.hashData());
+            txIn.signature = getKeyPairFromPublicKey(this.address).sign(transaction.hashData());
         })
     }
 }

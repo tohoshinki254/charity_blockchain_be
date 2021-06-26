@@ -10,7 +10,7 @@ class Wallet {
         this.address = this.keyPair.getPublic().encode("hex", false);
         this.name = name;
     }
-
+ 
     getAddress = () => {
         return this.address;
     }

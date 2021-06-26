@@ -529,11 +529,8 @@ module.exports = {
                 if (receiptEvent.endDate < current) {
                     receiptEvent.endEvent();
                 } else {
-                    console.log("A");
                     const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts);
-                    console.log("B");
                     pool.addTransaction(transaction, unspentTxOuts);
-                    console.log("C");
                     const validTransactions = pool.getValidTransaction();
                     if (validTransactions.length >= 2) {
                         validTransactions.forEach(tx => {
@@ -547,7 +544,7 @@ module.exports = {
                         const newBlock = blockchain.addBlock(validTransactions);
                         pool.clearTransaction(unspentTxOuts);
                     }
-                    console.log("D");
+                    
                     broadcast(messageUpdateTransactionPool);
 
                     res.status(200).json({

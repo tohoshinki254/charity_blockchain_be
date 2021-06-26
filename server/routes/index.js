@@ -136,7 +136,7 @@ router.get('/event/disbursement', (req, res, next) => {
 // disbursement
 // [headers] authorization: privateKey of event(project)
 // [body] amount
-router.post('/event/disbursement', (req, res, next) => {
+router.post('/event/disbursement', authenticateEvent, (req, res, next) => {
   controller.disbursement(req, res, next);
 });
 
