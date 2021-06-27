@@ -239,7 +239,9 @@ module.exports = {
                         let t = [];
                         for (let l = 0; l < transaction.txOuts.length; l++) {
                             if (event.has(transaction.txOuts[l].address)) {
-                                t.push(transaction.txOuts[l]);
+                                if (transaction.senderAddress != null && transaction.txOuts[l].address.localeCompare(transaction.senderAddress) != 0) {
+                                    t.push(transaction.txOuts[l]);
+                                }
                             }
                         }
 
@@ -323,7 +325,9 @@ module.exports = {
                     let t = [];
                     for (let l = 0; l < transaction.txOuts.length; l++) {
                         if (event.has(transaction.txOuts[l].address)) {
-                            t.push(transaction.txOuts[l]);
+                            if (transaction.senderAddress != null && transaction.txOuts[l].address.localeCompare(transaction.senderAddress) != 0) {
+                                t.push(transaction.txOuts[l]);
+                            }
                         }
                     }
 
@@ -349,7 +353,9 @@ module.exports = {
                 let t = [];
                 for (let j = 0; j < pool.transactions[i].txOuts.length; j++) {
                     if (event.has(pool.transactions[i].txOuts[j].address)) {
-                        t.push(pool.transactions[i].txOuts[j]);
+                        if (pool.transactions[i].senderAddress != null && pool.transactions[i].txOuts[j].address.localeCompare(pool.transactions[i].senderAddress) != 0) {
+                            t.push(pool.transactions[i].txOuts[j]);
+                        }
                     }
                 }
 
