@@ -2,7 +2,7 @@ const { event, accountMap } = require("../server/data/index");
 const Transaction = require("../transaction");
 const TxIn = require("../transaction/TxIn");
 const TxOut = require("../transaction/TxOut");
-const { verifyUnspentTxOut, getKeyPairFromPublicKey } = require("../utils/commonUtils");
+const { verifyUnspentTxOut, getKeyPairFromPrivateKey } = require("../utils/commonUtils");
 
 class Event {
     constructor(address, name, description, creator, creatorName, startDate, endDate) {
@@ -74,7 +74,7 @@ class Event {
         return {includedTxOuts: null, remainAmount: null};
     }
 
-    createDisbursement = (amount, unspentTxOuts) => {
+    createDisbursement = (privateKey, amount, unspentTxOuts) => {
         const { includedTxOuts, remainAmount } = this.findTxOutsForAmount(amount, unspentTxOuts);
 
         if (includedTxOuts !== null && remainAmount !== null) {
@@ -87,9 +87,14 @@ class Event {
                 return txIn;
             });
 
-            const disbursement = new Transaction(this.address, txIns, [txRemain], amount);
-            this.signDisbursement(disbursement, unspentTxOuts);
+            let txOuts = [];
+            if (txRemain !== null) {
+                txOuts.push(txRemain);
+            }
+
+            const disbursement = new Transaction(this.address, txIns, txOuts, amount);
             disbursement.hashData();
+            this.signDisbursement(privateKey, disbursement, unspentTxOuts);
             
             return disbursement;
         } else {
@@ -97,23 +102,18 @@ class Event {
         }
     }
 
-    signDisbursement = (transaction, unspentTxOuts) => {
+    signDisbursement = (privateKey, transaction, unspentTxOuts) => {
         if (transaction.senderAddress != this.address) {
             throw new Error('Transaction address is not match.');
         }
 
+        let keyPair = getKeyPairFromPrivateKey(privateKey);
+
         transaction.txIns.forEach((txIn) => {
-            console.log(txIn);
             if (!verifyUnspentTxOut(txIn.txOutId, this.address, unspentTxOuts)) {
                 throw new Error('Transaction address is not match.');
             }
 
-            let keyPair = getKeyPairFromPublicKey(this.address);
-            let privateKey = keyPair.getPrivate().toString(16);
-            console.log("privateKey", privateKey);
-            console.log(this.address);
-            console.log(txIn);
-            console.log(transaction.hashData());
             txIn.signature = keyPair.sign(transaction.hashData());
         })
     }

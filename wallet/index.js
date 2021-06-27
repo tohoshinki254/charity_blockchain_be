@@ -74,10 +74,8 @@ class Wallet {
 
             const transaction = new Transaction(this.address, txIns, [txOut, txRemain], amount);
             transaction.hashData();
-            console.log(transaction);
             this.signTransaction(transaction, unspentTxOuts);
             
-            console.log(transaction);
             return transaction;
         } else {
             let balance = this.getBalance(unspentTxOuts, pool);

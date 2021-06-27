@@ -225,50 +225,32 @@ module.exports = {
             }
 
             let donateHistory = [];
-            console.log("Get event donate history")
-            console.log(blockchain.chain)
 
             for (let i = 0; i < blockchain.chain.length; i++) {
                 for (let j = 0; j < blockchain.chain[i].data.length; j++) {
                     let transaction = blockchain.chain[i].data[j]
-
-                    console.log("blockchain - ", i, " - ", j);
-                    console.log(transaction);
-
-                    // for (let k = 0; k < transaction.length; k++) {
-                        // if (transactions[k].senderAddress !== eventAddress) {
-                        let t = [];
-                        for (let l = 0; l < transaction.txOuts.length; l++) {
-                            if (event.has(transaction.txOuts[l].address)) {
-                                t.push(transaction.txOuts[l]);
-                            }
+                    let t = [];
+                    for (let l = 0; l < transaction.txOuts.length; l++) {
+                        if (event.has(transaction.txOuts[l].address)) {
+                            t.push(transaction.txOuts[l]);
                         }
+                    }
 
 
-                        t.forEach(tx => {
-                            tx.senderAddress = transaction.senderAddress;
-                            tx.id = transaction.id;
-                            tx.timestamp = transaction.timestamp;
-                            tx.name = event.get(tx.address).name;
-                            tx.isSent = true;
-                        })
+                    t.forEach(tx => {
+                        tx.senderAddress = transaction.senderAddress;
+                        tx.id = transaction.id;
+                        tx.timestamp = transaction.timestamp;
+                        tx.name = event.get(tx.address).name;
+                        tx.isSent = true;
+                    })
 
-                        donateHistory = donateHistory.concat(t);
-                        // }
-                    // }
+                    donateHistory = donateHistory.concat(t);
                 }
             }
 
-            console.log("pool");
-            console.log(pool);
-
             for (let i = 0; i < pool.transactions.length; i++) {
-                console.log(pool.transactions[i]);
-                console.log(eventAddress);
-
                 if (pool.transactions[i].senderAddress !== eventAddress) {
-                    console.log("Here")
-                    console.log(pool.transactions[i].txOuts);
 
                     let t = [];
                     for (let j = 0; j < pool.transactions[i].txOuts.length; j++) {
@@ -278,9 +260,6 @@ module.exports = {
                         }
                     }
 
-
-                    console.log("t = ");
-                    console.log(t);
                     t.forEach(tx => {
                         tx.senderAddress = pool.transactions[i].senderAddress;
                         tx.id = pool.transactions[i].id;
@@ -299,25 +278,6 @@ module.exports = {
                     history: donateHistory
                 }
             })
-
-            // const history = pool.filter(transact => {
-            //     for (let i = 0; i < transact.txOuts.length; i++) {
-            //         if (transact.txOuts[i].localeCompare(eventAddress)) {
-            //             return true;
-            //         }
-            //     }
-            //     return false;
-            // })
-
-            // const ret = history.map(transact => {
-            //     const moneyReceived = transact.txOuts.find(element => element.address.localeCompare(eventAddress) === true).amount;
-            //     return {
-            //         senderAddress: transact.senderAddress,
-            //         moneyReceived: moneyReceived,
-            //         timestamp: transact.timestamp
-            //     }
-            // });
-            // return ret;
         }
         catch (e) {
             res.status(500).json({
@@ -330,18 +290,11 @@ module.exports = {
         try {
 
             let donateHistory = [];
-            console.log("Get all event donate history")
-            console.log(blockchain.chain)
 
             for (let i = 0; i < blockchain.chain.length; i++) {
                 for (let j = 0; j < blockchain.chain[i].data.length; j++) {
                     let transaction = blockchain.chain[i].data[j]
-
-                    console.log("blockchain - ", i, " - ", j);
-                    console.log(transaction);
-
-                    // for (let k = 0; k < transaction.length; k++) {
-                        if (transaction.senderAddress !== eventAddress) {
+                    if (transaction.senderAddress !== eventAddress) {
                         let t = [];
                         for (let l = 0; l < transaction.txOuts.length; l++) {
                             if (event.has(transaction.txOuts[l].address)) {
@@ -359,22 +312,11 @@ module.exports = {
                         })
 
                         donateHistory = donateHistory.concat(t);
-                        }
-                    // }
+                    }
                 }
             }
 
-            console.log("pool");
-            console.log(pool);
-
             for (let i = 0; i < pool.transactions.length; i++) {
-                console.log(pool.transactions[i]);
-                // console.log(eventAddress);
-
-                // if (pool.transactions[i].senderAddress !== eventAddress) {
-                console.log("Here")
-                console.log(pool.transactions[i].txOuts);
-
                 let t = [];
                 for (let j = 0; j < pool.transactions[i].txOuts.length; j++) {
                     if (event.has(pool.transactions[i].txOuts[j].address)) {
@@ -382,21 +324,15 @@ module.exports = {
                     }
                 }
 
-                console.log(t);
-
                 t.forEach(tx => {
                     tx.senderAddress = pool.transactions[i].senderAddress;
                     tx.id = pool.transactions[i].id;
                     tx.timestamp = pool.transactions[i].timestamp;
-
-                
-
                     tx.name = event.get(tx.address).name;
                     tx.isSent = false;
                 })
 
                 donateHistory = donateHistory.concat(t);
-                // }
             }
 
             res.status(200).json({
@@ -459,6 +395,7 @@ module.exports = {
     disbursement: (req, res, next) => {
         try {
             let { amount } = req.body;
+            const privateKey = req.headers.authorization;
             const curEvent = req.curEvent;
 
             amount = Number.parseInt(amount);
@@ -469,7 +406,7 @@ module.exports = {
                 return;
             }
 
-            const disbursement = curEvent.createDisbursement(amount, unspentTxOuts);
+            const disbursement = curEvent.createDisbursement(privateKey, amount, unspentTxOuts);
 
             pool.addTransaction(disbursement, unspentTxOuts);
 
@@ -488,7 +425,7 @@ module.exports = {
             }
 
             broadcast(messageDisbursement(curEvent), curEvent.address);
-
+            
             res.status(200).json({
                 message: 'OK'
             });
