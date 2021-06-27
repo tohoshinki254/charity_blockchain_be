@@ -100,7 +100,6 @@ module.exports = {
             const newBlock = blockchain.addBlock(validTransactions);
             pool.clearTransaction(unspentTxOuts);
 
-
             broadcast(messageUpdateBlockchain);
 
 

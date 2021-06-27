@@ -3,7 +3,7 @@ const WAITING_CONFIRM = 1712813;
 const MessageTypeEnum = {
     TEST: -1,
     CREATE_CONNECTION: 0,
-    UPDATE_POOL: 1,
+    UPDATE_ALL: 1,
     UPDATE_TRANSACTION_POOL: 2,
     ADD_EVENT: 3,
     ACCEPT_EVENT: 4,
@@ -11,7 +11,7 @@ const MessageTypeEnum = {
     FORCE_END_EVENT: 6,
     NEW_USER: 7,
     
-    UI_UPDATE_BLOCKCHAIN: 1001,
+    UI_UPDATE_ALL: 1001,
     UI_UPDATE_POOL: 1002,
     UI_ADD_EVENT: 1003,
     UI_ACCEPT_EVENT: 1004,
