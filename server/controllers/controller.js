@@ -438,6 +438,7 @@ module.exports = {
     disbursement: (req, res, next) => {
         try {
             let { amount, reason } = req.body;
+            const privateKey = req.headers.authorization;
             const curEvent = req.curEvent;
 
             amount = Number.parseInt(amount);
@@ -448,7 +449,7 @@ module.exports = {
                 return;
             }
 
-            const disbursement = curEvent.createDisbursement(amount, unspentTxOuts, reason);
+            const disbursement = curEvent.createDisbursement(privateKey, amount, unspentTxOuts, reason);
 
             pool.addTransaction(disbursement, unspentTxOuts);
 
@@ -473,7 +474,7 @@ module.exports = {
             });
         } catch (e) {
             res.status(500).json({
-                message: e.message
+                message: e.stack
             })
         }
     },

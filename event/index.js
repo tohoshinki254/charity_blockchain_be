@@ -74,7 +74,7 @@ class Event {
         return {includedTxOuts: null, remainAmount: null};
     }
 
-    createDisbursement = (privateKey, amount, unspentTxOuts) => {
+    createDisbursement = (privateKey, amount, unspentTxOuts, reason) => {
         const { includedTxOuts, remainAmount } = this.findTxOutsForAmount(amount, unspentTxOuts);
 
         if (includedTxOuts !== null && remainAmount !== null) {
@@ -92,7 +92,7 @@ class Event {
                 txOuts.push(txRemain);
             }
 
-            const disbursement = new Transaction(this.address, txIns, txOuts, amount);
+            const disbursement = new Transaction(this.address, txIns, txOuts, amount, reason);
             disbursement.hashData();
             this.signDisbursement(privateKey, disbursement, unspentTxOuts);
             
