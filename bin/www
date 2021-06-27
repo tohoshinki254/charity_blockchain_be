@@ -7,7 +7,7 @@ require('dotenv').config();
 var app = require('../app');
 var debug = require('debug')('charity-blockchain-be:server');
 var http = require('http');
-const { initP2PConnect } = require('../utils/p2pUtils');
+const { initP2PConnect, doA } = require('../utils/p2pUtils');
 
 /**
  * Get port from environment and store in Express.
@@ -40,12 +40,7 @@ var p2pSocketServer = require('socket.io')(httpP2PServer, {
   cors: { origin: "*" }
 })
 
-//* Socket server dùng cho kết nối với client
-var httpUIServer = require('http').createServer();
-var uiSocketServer = require('socket.io')(httpUIServer, {
-  cors: { origin: "*" },
-  setTimeout: 10000
-})
+
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -60,12 +55,11 @@ p2pSocketServer.on('connection', socket => {
   require('../utils/p2pUtils').initConnection(socket);
 })
 
-uiSocketServer.on('connection', socket => {
-  console.log('A client UI has accessed to this UI socket!!!')
-})
+doA();
+
+
 
 httpP2PServer.listen(p2pPort, () => console.log('App is listening on websocket - P2P port on: ' + p2pPort))
-httpUIServer.listen(uiSocketPort, () => console.log('App is listening UI socket port on: ' + uiSocketPort))
 initP2PConnect(superNodePort, port)
 
 /**

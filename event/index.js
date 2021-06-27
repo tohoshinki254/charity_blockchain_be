@@ -103,11 +103,18 @@ class Event {
         }
 
         transaction.txIns.forEach((txIn) => {
+            console.log(txIn);
             if (!verifyUnspentTxOut(txIn.txOutId, this.address, unspentTxOuts)) {
                 throw new Error('Transaction address is not match.');
             }
 
-            txIn.signature = getKeyPairFromPublicKey(this.address).sign(transaction.hashData());
+            let keyPair = getKeyPairFromPublicKey(this.address);
+            let privateKey = keyPair.getPrivate().toString(16);
+            console.log("privateKey", privateKey);
+            console.log(this.address);
+            console.log(txIn);
+            console.log(transaction.hashData());
+            txIn.signature = keyPair.sign(transaction.hashData());
         })
     }
 }

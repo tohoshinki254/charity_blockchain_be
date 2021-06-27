@@ -1,9 +1,30 @@
 require('dotenv').config();
 const axios = require('axios');
 const ioClient = require('socket.io-client');
-const { senderSockets, peerHttpPortList, sockets, blockchain, pool, event } = require('../server/data');
+const { senderSockets, peerHttpPortList, sockets, blockchain, pool, event, accountMap } = require('../server/data');
 const MessageTypeEnum = require('../utils/constants').MessageTypeEnum;
 const localhost = 'http://localhost:';
+const {isValidChain} = require('../utils/chainUtils')
+
+
+//* Socket server dùng cho kết nối với client
+var httpUIServer;
+var uiSocketServer;
+
+
+const doA = () => {
+    httpUIServer = require('http').createServer();
+    uiSocketServer = require('socket.io')(httpUIServer, {
+        cors: { origin: "*" },
+        setTimeout: 10000
+    })
+
+    uiSocketServer.on('connection', socket => {
+        console.log('A client UI has accessed to this UI socket!!!')
+    })
+
+    httpUIServer.listen(process.env.UI_SOCKET_PORT, () => console.log('App is listening UI socket port on: ' + process.env.UI_SOCKET_PORT))
+}
 
 /**
  * Dùng để xử lý các message nhận được từ socket client gửi lên
@@ -17,7 +38,7 @@ const localhost = 'http://localhost:';
 const initSocketServerMessageHandler = ws => {
     ws.on('message', message => {
         try {
-            console.log("Client message handler");
+            console.log("Server message handler");
             console.log(message);
 
             switch (message.type) {
@@ -32,6 +53,71 @@ const initSocketServerMessageHandler = ws => {
                     peerHttpPortList.push(localhost + message.data.httpPort)
 
                     // write(newSocket, queryChainLengthMsg());
+                    break;
+                case MessageTypeEnum.TEST:
+                    console.log("Test1 sent");
+                    break;
+                case MessageTypeEnum.UPDATE_BLOCKCHAIN:
+                    let newBlockchain = message.data.blockchain;
+                    let newPool = message.data.pool;
+
+                    // Xử lý logic
+                    if (isValidChain(newBlockchain)) {
+                        blockchain.chain = newBlockchain;
+                        pool.transactions = newPool;
+                    }
+
+                    //Bắn yêu cầu client update thông tin mới
+                    this.broadcastToUI(UIMessageUpdateBlockchain);
+
+                    break;
+                case MessageTypeEnum.UPDATE_TRANSACTION_POOL:
+                    let newPool1 = message.data.pool;
+
+                    pool.transactions = newPool1;
+
+                    this.broadcastToUI(UIMessageUpdatePool);
+                    break;
+                case MessageTypeEnum.ADD_EVENT:
+                    let newEvent = message.data.event;
+
+                    event.set(newEvent.address, newEvent);
+                    // event = message.data.event;
+
+                    this.broadcastToUI(UIMessageAddEvent);
+                    break;
+                case MessageTypeEnum.ACCEPT_EVENT:
+                    let eventId = message.data.eventId;
+                    let publicKey = message.data.publicKey;
+
+                    let thisEvent = event.get(eventId);
+                    thisEvent.acceptEvent(publicKey);
+
+                    this.broadcastToUI(UIMessageAcceptEvents);
+                    break;
+
+                case MessageTypeEnum.DISBURSEMENT:
+
+                    blockchain.chain = message.data.blockchain;
+                    pool.transactions = message.data.pool;
+                    event.set(message.data.curEvent.address, message.data.curEvent);
+                    // pool = message.data.pool;
+                    // event = message.data.event;
+
+                    this.broadcastToUI(UIMessageDisbursement);
+                    break;
+                case MessageTypeEnum.FORCE_END_EVENT:
+                    // let currentEvent1 = message.data.curEvent;
+                    event.set(message.data.curEvent.address, message.data.curEvent);
+
+                    this.broadcastToUI(UIMessageForceEndEvent);
+                    break;
+                case MessageTypeEnum.NEW_USER:
+                    let newUser = message.data.account;
+                    accountMap.set(newUser.address, newUser);
+                    // this.broadcastToUI({
+                    //     type: MessageTypeEnum.UI_
+                    // })
                     break;
             }
         }
@@ -51,24 +137,34 @@ const initErrorHandler = ws => {
     ws.on('error', () => closeConnection(ws));
 }
 
+/**
+ * 
+ * @param {Object} message 
+ */
+const broadcastToUI = (message) => {
+    uiSocketServer.send(message);
+}
+
+
+/**
+ * Sử dụng các sender sockets (server) đã có trước đó bắn thông tin cho tất
+ * cả các client (ở đây là socket-client) tương ứng 
+ * @param {JSON} message chứa 2 trường thông tin type và data
+ */
+const broadcast = (message) => {
+    console.log("broadcasting");
+    console.log(message);
+    senderSockets.forEach(socket => socket.send(message));
+    broadcastToUI({
+        type: message.type + 1000
+    });
+}
+
 
 module.exports = {
-    /**
-     * Sử dụng các sender sockets (server) đã có trước đó bắn thông tin cho tất
-     * cả các client (ở đây là socket-client) tương ứng 
-     * @param {JSON} message chứa 2 trường thông tin type và data
-     */
-    broadcast: (message) => {
-        senderSockets.forEach(socket => socket.send(message));
-    },
-
-    /**
-     * 
-     * @param {Object} message 
-     */
-    broadcastToUI: (message) => {
-        uiSocketServer.send(message);
-    },
+    doA,
+    broadcastToUI,
+    broadcast,
 
     /**
      * Khởi tạo connect tới node chính, sau đó lấy danh sách peer từ node chính,
@@ -171,52 +267,10 @@ module.exports = {
 
         try {
             switch (message.type) {
-                case MessageTypeEnum.UPDATE_BLOCKCHAIN:
-                    let newBlockchain = message.data.blockchain;
-                    let newPool = message.data.pool;
-
-                    // Xử lý logic
-                    if (isValidChain(newBlockchain)) {
-                        blockchain = newBlockchain;
-                        pool = newPool;
-                    }
-
-                    //Bắn yêu cầu client update thông tin mới
-                    this.broadcastToUI(UIMessageUpdateBlockchain);
-
+                case MessageTypeEnum.TEST:
+                    console.log("Test2 sent");
                     break;
-                case MessageTypeEnum.UPDATE_TRANSACTION_POOL:
-                    let newPool1 = message.data.pool;
 
-                    pool = newPool1;
-
-                    this.broadcastToUI(UIMessageUpdatePool);
-                    break;
-                case MessageTypeEnum.UI_ADD_EVENT:
-                    // let newEvent = message.data.event;
-
-                    // event.set(event.address, newEvent);
-                    event = message.data.event;
-
-                    this.broadcastToUI(UIMessageAddEvent);
-                    break;
-                case MessageTypeEnum.DISBURSEMENT:
-                    // let amount = message.data.amount;
-                    // let currentEvent = message.data.curEvent;
-                    // let pool = message.data.pool;
-
-                    pool = message.data.pool;
-                    event = message.data.event;
-
-
-                    this.broadcastToUI(UIMessageDisbursement);
-                    break;
-                case MessageTypeEnum.FORCE_END_EVENT:
-                    // let currentEvent1 = message.data.curEvent;
-                    event = message.data.event
-
-                    this.broadcastToUI(UIMessageForceEndEvent);
-                    break;
             }
         }
         catch (e) {

@@ -5,15 +5,15 @@ module.exports = {
     messageUpdateBlockchain: {
         type: MessageTypeEnum.UPDATE_BLOCKCHAIN,
         data: {
-            blockchain: blockchain,
-            pool: pool
+            blockchain: blockchain.chain,
+            pool: pool.transactions
         }
     },
 
     messageUpdateTransactionPool: {
-        type: MessageTypeEnum.UPDATE_ALL,
+        type: MessageTypeEnum.UPDATE_POOL,
         data: {
-            pool: pool
+            pool: pool.transactions
         }
     },
 
@@ -30,21 +30,24 @@ module.exports = {
         return ({
             type: MessageTypeEnum.ACCEPT_EVENT,
             data: {
-                event: event
-                // eventId: eventId,
-                // publicKey: publicKey
+                // event: event
+                eventId: eventId,
+                publicKey: publicKey
             }
         })
     },
 
-    messageDisbursement: (amount, curEvent) => {
+    messageDisbursement: (curEvent) => {
         return ({
             type: MessageTypeEnum.DISBURSEMENT,
             data: {
                 // amount: amount,
                 // curEvent: curEvent,
-                pool: pool,
-                event: event
+                // pool: pool,
+                // event: event
+                blockchain: blockchain.chain,
+                pool: pool.transactions,
+                curEvent: curEvent
             }
         })
     },
@@ -53,7 +56,16 @@ module.exports = {
         return ({
             type: MessageTypeEnum.FORCE_END_EVENT,
             data: {
-                event: event
+                curEvent: curEvent
+            }
+        })
+    },
+
+    messageNewUser: (account) => {
+        return ({
+            type: MessageTypeEnum.NEW_USER,
+            data: {
+                account: account
             }
         })
     },
@@ -65,6 +77,10 @@ module.exports = {
 
     UIMessageUpdatePool: {
         type: MessageTypeEnum.UI_UPDATE_BLOCKCHAIN
+    },
+
+    UIMessageAddEvent: {
+        type: MessageTypeEnum.UI_ADD_EVENT
     },
 
     UIMessageAcceptEvents: {

@@ -1,7 +1,9 @@
 const express = require('express');
+const { MessageTypeEnum } = require('../../utils/constants');
+const { broadcast, broadcastToUI } = require('../../utils/p2pUtils');
 const router = express.Router();
 const controller = require('../controllers/controller');
-const { pool } = require('../data');
+const { pool, accountMap } = require('../data');
 const { authenticateWallet, authenticateEvent } = require('../middlewares/authenticate');
 
 router.get('/', (req, res, next) => {
@@ -24,6 +26,25 @@ router.get('/pool', (req, res, next) => {
     message: 'OK',
     payload: {
       pool: pool
+    }
+  })
+})
+
+router.get('/testUISocket', (req, res, next) => {
+  broadcastToUI({
+    type: MessageTypeEnum.TEST
+  })
+
+  return res.status(200).json({
+    message: 'OK'
+  })
+})
+
+router.get('/user', (req, res, next) => {
+  return res.status(200).json({
+    message: 'OK',
+    payload: {
+      count: accountMap.size
     }
   })
 })
@@ -159,6 +180,15 @@ router.post('/event/checkAccept', authenticateWallet, (req, res, next) => {
 router.get('/event/detail', (req, res, next) => {
   controller.getEventByAddress(req, res, next);
 });
+
+router.post('/dispatch', (req, res, next) => {
+  broadcast({
+    type: MessageTypeEnum.TEST
+  })
+  res.status(200).json({
+    message: 'OK'
+  })
+})
 
 
 //------------------------------------------------------------

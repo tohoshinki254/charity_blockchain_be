@@ -4,7 +4,7 @@ const Wallet = require('../../wallet');
 const Event = require('../../event');
 const { connectToPeers, broadcast } = require('../../utils/p2pUtils');
 const { MessageTypeEnum } = require('../../utils/constants');
-const { messageUpdateBlockchain, messageUpdateTransactionPool, messageAddEvents, messageDisbursement, messageForceEndEvent } = require('../messages/message');
+const { messageUpdateBlockchain, messageUpdateTransactionPool, messageAddEvents, messageDisbursement, messageForceEndEvent, messageNewUser, messageAcceptEvents } = require('../messages/message');
 const { getTotalDisbursement } = require('../../utils/chainUtils');
 
 module.exports = {
@@ -24,7 +24,10 @@ module.exports = {
             name = "No Name"
         }
 
-        accountMap.set(privateKey, new Wallet(privateKey, name));
+        let newWallet = new Wallet(privateKey, name);
+
+        accountMap.set(privateKey, newWallet);
+        broadcast(messageNewUser(newWallet));
         res.status(200).json({
             message: 'OK',
             payload: {
@@ -128,7 +131,7 @@ module.exports = {
             newEvent.acceptEvent(creator);
             event.set(address, newEvent);
 
-            broadcast(messageAddEvents(event));
+            broadcast(messageAddEvents(newEvent));
 
             res.status(200).json({
                 message: 'OK',
@@ -179,7 +182,7 @@ module.exports = {
             return;
         }
 
-        broadcast(messageAddEvents(eventId, publicKey));
+        broadcast(messageAcceptEvents(eventId, publicKey));
 
         res.status(200).json({
             message: 'OK'
@@ -485,7 +488,7 @@ module.exports = {
                 pool.clearTransaction(unspentTxOuts);
             }
 
-            broadcast(messageDisbursement(amount, curEvent));
+            broadcast(messageDisbursement(curEvent));
 
             res.status(200).json({
                 message: 'OK'
