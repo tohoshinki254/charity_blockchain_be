@@ -407,6 +407,7 @@ module.exports = {
                             id: transaction.id,
                             timestamp: transaction.timestamp,
                             amount: transaction.amount,
+                            reason: transaction.reason,
                             isSent: true
                         })
                     }
@@ -424,6 +425,7 @@ module.exports = {
                             id: pool.transactions[i].id,
                             timestamp: pool.transactions[i].timestamp,
                             amount: pool.transactions[i].amount,
+                            reason: pool.transactions[i].reason,
                             isSent: false
                         })
                     } 
@@ -433,6 +435,7 @@ module.exports = {
                         id: pool.transactions[i].id,
                         timestamp: pool.transactions[i].timestamp,
                         amount: pool.transactions[i].amount,
+                        reason: pool.transactions[i].reason,
                         isSent: false
                     })
                 }
@@ -446,7 +449,7 @@ module.exports = {
             })
         }
         catch (e) {
-            console.log(e.stack)
+            console.log(e.message)
             res.status(500).json({
                 message: e.message
             })
@@ -491,8 +494,9 @@ module.exports = {
                 message: 'OK'
             });
         } catch (e) {
+            console.log(e.stack)
             res.status(500).json({
-                message: e.stack
+                message: e.message
             })
         }
     },

@@ -1,3 +1,4 @@
+const { event } = require('../server/data');
 const { createGenesisBlock, hashBlock } = require('./blockUtils');
 
 const isValidChain = (chain) => {
@@ -19,14 +20,15 @@ const isValidChain = (chain) => {
 const getTotalDisbursement = (eventAddress, blockchain) => {
     let total = 0;
 
+    if (event.get(eventAddress) === undefined) {
+        throw new Error("This address is not an event");
+    }
+
     for (let i = 0; i < blockchain.chain.length; i++) {
         for (let j = 0; j < blockchain.chain[i].data.length; j++) {
-            let transactions = blockchain.chain[i].data[j]
-            for (let k = 0; k < transactions.length; k++) {
-                let isSame = transactions[k].senderAddress.localeCompare(eventAddress);
-                if (isSame == 0) {
-                    total = total + transactions[k].amount;
-                }
+            let transaction = blockchain.chain[i].data[j]
+            if (transaction.senderAddress != null && transaction.senderAddress.localeCompare(eventAddress) == 0) {
+                total = total + transaction.amount;
             }
         }
     }
