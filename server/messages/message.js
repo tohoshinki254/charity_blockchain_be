@@ -107,8 +107,11 @@ module.exports = {
     UIMessageDisbursement: {
         type: MessageTypeEnum.UI_DISBURSEMENT
     },
-    UIMessageForceEndEvent: {
-        type: MessageTypeEnum.FORCE_END_EVENT,
+    UIMessageForceEndEvent: (address) => {
+        return ({
+            type: MessageTypeEnum.FORCE_END_EVENT,
+            data: address
+        })
     },
 
 }

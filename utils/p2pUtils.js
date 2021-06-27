@@ -110,7 +110,7 @@ const initSocketServerMessageHandler = ws => {
                     // let currentEvent1 = message.data.curEvent;
                     event.set(message.data.curEvent.address, message.data.curEvent);
 
-                    this.broadcastToUI(UIMessageForceEndEvent);
+                    this.broadcastToUI(UIMessageForceEndEvent(message.data.curEvent.address));
                     break;
                 case MessageTypeEnum.NEW_USER:
                     let newUser = message.data.account;
