@@ -510,7 +510,7 @@ module.exports = {
                 if (receiptEvent.endDate < current) {
                     receiptEvent.endEvent();
                 } else {
-                    const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts, reason);
+                    const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts, "Transaction");
                     pool.addTransaction(transaction, unspentTxOuts);
                     const validTransactions = pool.getValidTransaction();
                     if (validTransactions.length >= 2) {
