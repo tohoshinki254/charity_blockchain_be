@@ -397,12 +397,16 @@ module.exports = {
             for (let i = 0; i < blockchain.chain.length; i++) {
                 for (let j = 0; j < blockchain.chain[i].data.length; j++) {
                     let transaction = blockchain.chain[i].data[j]
+                    let str = transaction.senderAddress;
+                    if (str == null) {
+                        continue;
+                    }
                     let isSame = transaction.senderAddress.localeCompare(eventAddress);
                     if (isSame == 0) {
                         disbursementHistory.push({
-                            id: transactions[k].id,
-                            timestamp: transactions[k].timestamp,
-                            amount: transactions[k].amount,
+                            id: transaction.id,
+                            timestamp: transaction.timestamp,
+                            amount: transaction.amount,
                             isSent: true
                         })
                     }
@@ -410,8 +414,21 @@ module.exports = {
             }
 
             for (let i = 0; i < pool.transactions.length; i++) {
-                let a = pool.transactions[i].txIns.filter(txIn => txIn.signature == null);
-                if (a !== undefined && pool.transactions[i].senderAddress.localeCompare(eventAddress) == 0) {
+                let a = pool.transactions[i].txOuts;
+                if (a.length >= 2) {
+                    continue;
+                }
+                else if (a.length == 1) {
+                    if (pool.transactions[i].txOuts[0].address.localeCompare(pool.transactions[i].senderAddress) == 0) {
+                        disbursementHistory.push({
+                            id: pool.transactions[i].id,
+                            timestamp: pool.transactions[i].timestamp,
+                            amount: pool.transactions[i].amount,
+                            isSent: false
+                        })
+                    } 
+                }
+                else {
                     disbursementHistory.push({
                         id: pool.transactions[i].id,
                         timestamp: pool.transactions[i].timestamp,
@@ -429,6 +446,7 @@ module.exports = {
             })
         }
         catch (e) {
+            console.log(e.stack)
             res.status(500).json({
                 message: e.message
             })
