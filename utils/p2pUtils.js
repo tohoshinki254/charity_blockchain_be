@@ -151,12 +151,13 @@ const broadcastToUI = (message) => {
  * cả các client (ở đây là socket-client) tương ứng 
  * @param {JSON} message chứa 2 trường thông tin type và data
  */
-const broadcast = (message) => {
+const broadcast = (message, data) => {
     console.log("broadcasting");
     console.log(message);
     senderSockets.forEach(socket => socket.send(message));
     broadcastToUI({
-        type: message.type + 1000
+        type: message.type + 1000,
+        data: data
     });
 }
 

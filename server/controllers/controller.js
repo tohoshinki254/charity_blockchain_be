@@ -96,7 +96,8 @@ module.exports = {
                     }
                 })
             })
-
+            broadcast(messageUpdateTransactionPool);
+            
             const newBlock = blockchain.addBlock(validTransactions);
             pool.clearTransaction(unspentTxOuts);
 
@@ -181,7 +182,7 @@ module.exports = {
             return;
         }
 
-        broadcast(messageAcceptEvents(eventId, publicKey));
+        broadcast(messageAcceptEvents(eventId, publicKey), eventId);
 
         res.status(200).json({
             message: 'OK'
@@ -275,7 +276,6 @@ module.exports = {
                         if (lm == 0) {
                             t.push(pool.transactions[i].txOuts[j]);
                         }
-
                     }
 
 
@@ -487,7 +487,7 @@ module.exports = {
                 pool.clearTransaction(unspentTxOuts);
             }
 
-            broadcast(messageDisbursement(curEvent));
+            broadcast(messageDisbursement(curEvent), curEvent.address);
 
             res.status(200).json({
                 message: 'OK'
@@ -545,6 +545,8 @@ module.exports = {
 
                         const newBlock = blockchain.addBlock(validTransactions);
                         pool.clearTransaction(unspentTxOuts);
+
+                        broadcast(messageUpdateBlockchain);
                     }
                     
                     broadcast(messageUpdateTransactionPool);
