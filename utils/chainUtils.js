@@ -17,19 +17,37 @@ const isValidChain = (chain) => {
     return true;
 }
 
-const getTotalDisbursement = (eventAddress, blockchain) => {
+const getTotalDisbursement = (walletAddress, blockchain) => {
     let total = 0;
-
-    if (event.get(eventAddress) === undefined) {
-        throw new Error("This address is not an event");
-    }
+    console.log(walletAddress)
 
     for (let i = 0; i < blockchain.chain.length; i++) {
         for (let j = 0; j < blockchain.chain[i].data.length; j++) {
             let transaction = blockchain.chain[i].data[j]
-            if (transaction.senderAddress != null && transaction.senderAddress.localeCompare(eventAddress) == 0) {
-                total = total + transaction.amount;
-            }
+            // for (let k = 0; k < transactions.length; k++) {
+  
+                if (transaction.senderAddress == null) {
+                    continue;
+                }
+
+                // let isSame = transaction.senderAddress.localeCompare(walletAddress);
+                // if (isSame == 0) {
+
+                    let txOuts = transaction.txOuts;
+                    console.log("txouts.length", txOuts.length);
+                    if (txOuts.length == 2) {
+                        continue;
+                    }
+                    else if (txOuts.length == 1) {
+                        if (txOuts[0].address.localeCompare(transaction.senderAddress) == 0) {
+                            total = total + transaction.amount;
+                        }
+                    }
+                    else {
+                        total = total + transaction.amount;
+                    }
+                // }
+            // }
         }
     }
     return total;
