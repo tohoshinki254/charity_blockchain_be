@@ -98,7 +98,19 @@ class Event {
             
             return disbursement;
         } else {
-            throw new Error('You are not enough money to disburse');
+            let total = 0;
+            for (const [key, unspentTxOut] of unspentTxOuts) {
+                if (this.address === unspentTxOut.address) {
+                    total = total + unspentTxOut.amount;
+                }
+            }
+
+            if (total >= amount) {
+                throw new Error("You have enough money, but please wait for your transactions complete")
+            }
+            else {
+                throw new Error('You are not enough money to disburse');
+            }
         }
     }
 

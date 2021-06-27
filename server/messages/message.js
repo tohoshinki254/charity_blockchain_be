@@ -70,12 +70,14 @@ module.exports = {
     },
 
     messageForceEndEvent: (curEvent) => {
-        return ({
+        let data = {
             type: MessageTypeEnum.FORCE_END_EVENT,
             data: {
                 curEvent: curEvent
             }
-        })
+        };
+        console.log(data);
+        return data
     },
 
     messageNewUser: (account) => {

@@ -58,7 +58,7 @@ class Wallet {
         return {includedTxOuts: null, remainAmount: null};
     }
 
-    createTransaction = (receiptAddress, amount, unspentTxOuts) => {
+    createTransaction = (receiptAddress, amount, unspentTxOuts, reason) => {
         const { includedTxOuts, remainAmount } = this.findTxOutsForAmount(amount, unspentTxOuts);
 
         if (includedTxOuts !== null && remainAmount !== null) {
@@ -72,10 +72,12 @@ class Wallet {
                 return txIn;
             });
 
-            const transaction = new Transaction(this.address, txIns, [txOut, txRemain], amount);
+            const transaction = new Transaction(this.address, txIns, [txOut, txRemain], amount, reason);
             transaction.hashData();
+            console.log(transaction);
             this.signTransaction(transaction, unspentTxOuts);
             
+            console.log(transaction);
             return transaction;
         } else {
             let balance = this.getBalance(unspentTxOuts, pool);
@@ -90,7 +92,7 @@ class Wallet {
 
     addMoneyToWallet = (amount) => {
         const txOut = new TxOut(this.address, amount);
-        const transaction = new Transaction(null, [], [txOut], amount);
+        const transaction = new Transaction(null, [], [txOut], amount, "Address " + this.address + " add " + amount);
         return transaction;
     }
 

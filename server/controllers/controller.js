@@ -90,14 +90,14 @@ module.exports = {
 
             const validTransactions = pool.getValidTransaction();
             validTransactions.forEach(tx => {
-                tx.txOuts.forEach(txOut => {                         
-                    if (event.get(txOut.address) !== undefined) {                                 
+                tx.txOuts.forEach(txOut => {
+                    if (event.get(txOut.address) !== undefined) {
                         event.get(txOut.address).amountDonated = event.get(txOut.address).amountDonated + txOut.amount;
                     }
                 })
             })
             broadcast(messageUpdateTransactionPool);
-            
+
             const newBlock = blockchain.addBlock(validTransactions);
             pool.clearTransaction(unspentTxOuts);
 
@@ -225,32 +225,47 @@ module.exports = {
             }
 
             let donateHistory = [];
+            console.log("Get event donate history")
 
             for (let i = 0; i < blockchain.chain.length; i++) {
                 for (let j = 0; j < blockchain.chain[i].data.length; j++) {
                     let transaction = blockchain.chain[i].data[j]
-                    let t = [];
-                    for (let l = 0; l < transaction.txOuts.length; l++) {
-                        if (event.has(transaction.txOuts[l].address)) {
-                            t.push(transaction.txOuts[l]);
+
+                    console.log("blockchain - ", i, " - ", j);
+                    console.log(transaction);
+
+                    // for (let k = 0; k < transaction.length; k++) {
+                    if (transaction.senderAddress !== eventAddress) {
+                        let t = [];
+                        for (let l = 0; l < transaction.txOuts.length; l++) {
+                            if (event.has(transaction.txOuts[l].address)) {
+                                t.push(transaction.txOuts[l]);
+                            }
                         }
+
+
+                        t.forEach(tx => {
+                            tx.senderAddress = transaction.senderAddress;
+                            tx.id = transaction.id;
+                            tx.timestamp = transaction.timestamp;
+                            tx.name = event.get(tx.address).name;
+                            tx.isSent = true;
+                        })
+
+                        donateHistory = donateHistory.concat(t);
                     }
-
-
-                    t.forEach(tx => {
-                        tx.senderAddress = transaction.senderAddress;
-                        tx.id = transaction.id;
-                        tx.timestamp = transaction.timestamp;
-                        tx.name = event.get(tx.address).name;
-                        tx.isSent = true;
-                    })
-
-                    donateHistory = donateHistory.concat(t);
+                    // }
                 }
             }
 
+
             for (let i = 0; i < pool.transactions.length; i++) {
+                console.log(pool.transactions[i]);
+                console.log(eventAddress);
+
                 if (pool.transactions[i].senderAddress !== eventAddress) {
+                    console.log("Here")
+                    console.log(pool.transactions[i].txOuts);
 
                     let t = [];
                     for (let j = 0; j < pool.transactions[i].txOuts.length; j++) {
@@ -260,6 +275,9 @@ module.exports = {
                         }
                     }
 
+
+                    console.log("t = ");
+                    console.log(t);
                     t.forEach(tx => {
                         tx.senderAddress = pool.transactions[i].senderAddress;
                         tx.id = pool.transactions[i].id;
@@ -290,31 +308,42 @@ module.exports = {
         try {
 
             let donateHistory = [];
+            console.log("Get all event donate history")
+            console.log(blockchain.chain)
 
             for (let i = 0; i < blockchain.chain.length; i++) {
                 for (let j = 0; j < blockchain.chain[i].data.length; j++) {
                     let transaction = blockchain.chain[i].data[j]
-                    if (transaction.senderAddress !== eventAddress) {
-                        let t = [];
-                        for (let l = 0; l < transaction.txOuts.length; l++) {
-                            if (event.has(transaction.txOuts[l].address)) {
-                                t.push(transaction.txOuts[l]);
-                            }
+
+                    console.log("blockchain - ", i, " - ", j);
+                    console.log(transaction);
+
+                    // for (let k = 0; k < transaction.length; k++) {
+                    // if (transaction.senderAddress !== eventAddress) {
+                    let t = [];
+                    for (let l = 0; l < transaction.txOuts.length; l++) {
+                        if (event.has(transaction.txOuts[l].address)) {
+                            t.push(transaction.txOuts[l]);
                         }
-
-
-                        t.forEach(tx => {
-                            tx.senderAddress = transaction.senderAddress;
-                            tx.id = transaction.id;
-                            tx.timestamp = transaction.timestamp;
-                            tx.name = event.get(tx.address).name;
-                            tx.isSent = true;
-                        })
-
-                        donateHistory = donateHistory.concat(t);
                     }
+
+
+                    t.forEach(tx => {
+                        tx.senderAddress = transaction.senderAddress;
+                        tx.id = transaction.id;
+                        tx.timestamp = transaction.timestamp;
+                        tx.name = event.get(tx.address).name;
+                        tx.isSent = true;
+                    })
+
+                    donateHistory = donateHistory.concat(t);
+                    // }
+                    // }
                 }
             }
+
+            console.log("pool");
+            console.log(pool);
 
             for (let i = 0; i < pool.transactions.length; i++) {
                 let t = [];
@@ -323,6 +352,8 @@ module.exports = {
                         t.push(pool.transactions[i].txOuts[j]);
                     }
                 }
+
+                console.log(t);
 
                 t.forEach(tx => {
                     tx.senderAddress = pool.transactions[i].senderAddress;
@@ -333,6 +364,7 @@ module.exports = {
                 })
 
                 donateHistory = donateHistory.concat(t);
+                // }
             }
 
             res.status(200).json({
@@ -364,17 +396,28 @@ module.exports = {
 
             for (let i = 0; i < blockchain.chain.length; i++) {
                 for (let j = 0; j < blockchain.chain[i].data.length; j++) {
-                    let transactions = blockchain.chain[i].data[j]
-                    for (let k = 0; k < transactions.length; k++) {
-                        let isSame = transactions[k].senderAddress.localeCompare(eventAddress);
-                        if (isSame == 0) {
-                            disbursementHistory.push({
-                                id: transactions[k].id,
-                                timestamp: transactions[k].timestamp,
-                                amount: transactions[k].amount
-                            })
-                        }
+                    let transaction = blockchain.chain[i].data[j]
+                    let isSame = transaction.senderAddress.localeCompare(eventAddress);
+                    if (isSame == 0) {
+                        disbursementHistory.push({
+                            id: transactions[k].id,
+                            timestamp: transactions[k].timestamp,
+                            amount: transactions[k].amount,
+                            isSent: true
+                        })
                     }
+                }
+            }
+
+            for (let i = 0; i < pool.transactions.length; i++) {
+                let a = pool.transactions[i].txIns.filter(txIn => txIn.signature == null);
+                if (a !== undefined && pool.transactions[i].senderAddress.localeCompare(eventAddress) == 0) {
+                    disbursementHistory.push({
+                        id: pool.transactions[i].id,
+                        timestamp: pool.transactions[i].timestamp,
+                        amount: pool.transactions[i].amount,
+                        isSent: false
+                    })
                 }
             }
 
@@ -394,8 +437,7 @@ module.exports = {
 
     disbursement: (req, res, next) => {
         try {
-            let { amount } = req.body;
-            const privateKey = req.headers.authorization;
+            let { amount, reason } = req.body;
             const curEvent = req.curEvent;
 
             amount = Number.parseInt(amount);
@@ -406,15 +448,15 @@ module.exports = {
                 return;
             }
 
-            const disbursement = curEvent.createDisbursement(privateKey, amount, unspentTxOuts);
+            const disbursement = curEvent.createDisbursement(amount, unspentTxOuts, reason);
 
             pool.addTransaction(disbursement, unspentTxOuts);
 
             const validTransactions = pool.getValidTransaction();
             if (validTransactions.length >= 2) {
                 validTransactions.forEach(tx => {
-                    tx.txOuts.forEach(txOut => {                         
-                        if (event.get(txOut.address) !== undefined) {                                 
+                    tx.txOuts.forEach(txOut => {
+                        if (event.get(txOut.address) !== undefined) {
                             event.get(txOut.address).amountDonated = event.get(txOut.address).amountDonated + txOut.amount;
                         }
                     })
@@ -425,7 +467,7 @@ module.exports = {
             }
 
             broadcast(messageDisbursement(curEvent), curEvent.address);
-            
+
             res.status(200).json({
                 message: 'OK'
             });
@@ -468,13 +510,13 @@ module.exports = {
                 if (receiptEvent.endDate < current) {
                     receiptEvent.endEvent();
                 } else {
-                    const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts);
+                    const transaction = wallet.createTransaction(receiptAddress, amount, unspentTxOuts, reason);
                     pool.addTransaction(transaction, unspentTxOuts);
                     const validTransactions = pool.getValidTransaction();
                     if (validTransactions.length >= 2) {
                         validTransactions.forEach(tx => {
-                            tx.txOuts.forEach(txOut => {                         
-                                if (event.get(txOut.address) !== undefined) {                                 
+                            tx.txOuts.forEach(txOut => {
+                                if (event.get(txOut.address) !== undefined) {
                                     event.get(txOut.address).amountDonated = event.get(txOut.address).amountDonated + txOut.amount;
                                 }
                             })
@@ -485,7 +527,7 @@ module.exports = {
 
                         broadcast(messageUpdateBlockchain);
                     }
-                    
+
                     broadcast(messageUpdateTransactionPool);
 
                     res.status(200).json({
@@ -588,7 +630,7 @@ module.exports = {
         }
     },
 
-    
+
 
     getAllEvents: (req, res, next) => {
         try {
@@ -652,7 +694,7 @@ module.exports = {
             const curEvent = req.curEvent;
             curEvent.endEvent();
 
-            broadcast(messageForceEndEvent(curEvent));
+            broadcast(messageForceEndEvent(curEvent), curEvent.address);
 
             res.status(200).json({
                 message: 'OK'
@@ -674,7 +716,7 @@ module.exports = {
                     message: 'OK',
                     event: curEvent,
                     percentAccepted: (curEvent.status >= 1 ? 1 : curEvent.acceptPeople.size / accountMap.size),
-                    totalDisbursement: getTotalDisbursement(curEvent.creator,blockchain)
+                    totalDisbursement: getTotalDisbursement(curEvent.creator, blockchain)
                 });
                 return;
             }
