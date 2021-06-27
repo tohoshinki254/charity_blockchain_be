@@ -342,7 +342,7 @@ module.exports = {
                     console.log(transaction);
 
                     // for (let k = 0; k < transaction.length; k++) {
-                        if (transactions[k].senderAddress !== eventAddress) {
+                        if (transaction.senderAddress !== eventAddress) {
                         let t = [];
                         for (let l = 0; l < transaction.txOuts.length; l++) {
                             if (event.has(transaction.txOuts[l].address)) {
