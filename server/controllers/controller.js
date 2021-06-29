@@ -91,7 +91,7 @@ module.exports = {
             const validTransactions = pool.getValidTransaction();
             validTransactions.forEach(tx => {
                 tx.txOuts.forEach(txOut => {
-                    if (event.get(txOut.address) !== undefined) {
+                    if (event.get(txOut.address) !== undefined && tx.senderAddress != null && tx.senderAddress.localeCompare(txOut.address) != 0) {
                         event.get(txOut.address).amountDonated = event.get(txOut.address).amountDonated + txOut.amount;
                     }
                 })
