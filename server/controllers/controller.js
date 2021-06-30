@@ -484,7 +484,7 @@ module.exports = {
             if (validTransactions.length >= 2) {
                 validTransactions.forEach(tx => {
                     tx.txOuts.forEach(txOut => {
-                        if (event.get(txOut.address) !== undefined) {
+                        if (event.get(txOut.address) !== undefined && tx.senderAddress != null && tx.senderAddress.localeCompare(txOut.address) != 0) {
                             event.get(txOut.address).amountDonated = event.get(txOut.address).amountDonated + txOut.amount;
                         }
                     })
@@ -545,7 +545,7 @@ module.exports = {
                     if (validTransactions.length >= 2) {
                         validTransactions.forEach(tx => {
                             tx.txOuts.forEach(txOut => {
-                                if (event.get(txOut.address) !== undefined) {
+                                if (event.get(txOut.address) !== undefined && tx.senderAddress != null && tx.senderAddress.localeCompare(txOut.address) != 0) {
                                     event.get(txOut.address).amountDonated = event.get(txOut.address).amountDonated + txOut.amount;
                                 }
                             })
@@ -569,6 +569,7 @@ module.exports = {
                 message: 'event is not found'
             });
         } catch (e) {
+            console.log(e.stack)
             res.status(500).json({
                 message: e.message
             });
