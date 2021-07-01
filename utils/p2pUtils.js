@@ -4,13 +4,26 @@ const ioClient = require('socket.io-client');
 const { senderSockets, peerHttpPortList, sockets, blockchain, pool, event, accountMap } = require('../server/data');
 const MessageTypeEnum = require('../utils/constants').MessageTypeEnum;
 const localhost = 'http://localhost:';
-const {isValidChain} = require('../utils/chainUtils')
+const { isValidChain } = require('../utils/chainUtils')
+const { UIMessageAcceptEvents,
+    UIMessageAddEvent,
+    UIMessageDisbursement,
+    UIMessageForceEndEvent,
+    UIMessageUpdateBlockchain,
+    UIMessageUpdatePool } = require('../server/messages/message')
 
 
 //* Socket server dùng cho kết nối với client
 var httpUIServer;
 var uiSocketServer;
 
+/**
+ * 
+ * @param {Object} message 
+ */
+ const broadcastToUI = (message) => {
+    uiSocketServer.send(message);
+}
 
 const doA = () => {
     httpUIServer = require('http').createServer();
@@ -25,6 +38,8 @@ const doA = () => {
 
     httpUIServer.listen(process.env.UI_SOCKET_PORT, () => console.log('App is listening UI socket port on: ' + process.env.UI_SOCKET_PORT))
 }
+
+
 
 /**
  * Dùng để xử lý các message nhận được từ socket client gửi lên
@@ -57,7 +72,7 @@ const initSocketServerMessageHandler = ws => {
                 case MessageTypeEnum.TEST:
                     console.log("Test1 sent");
                     break;
-                case MessageTypeEnum.UPDATE_BLOCKCHAIN:
+                case MessageTypeEnum.UPDATE_ALL:
                     let newBlockchain = message.data.blockchain;
                     let newPool = message.data.pool;
 
@@ -68,7 +83,7 @@ const initSocketServerMessageHandler = ws => {
                     }
 
                     //Bắn yêu cầu client update thông tin mới
-                    this.broadcastToUI(UIMessageUpdateBlockchain);
+                    broadcastToUI(UIMessageUpdateBlockchain);
 
                     break;
                 case MessageTypeEnum.UPDATE_TRANSACTION_POOL:
@@ -76,7 +91,7 @@ const initSocketServerMessageHandler = ws => {
 
                     pool.transactions = newPool1;
 
-                    this.broadcastToUI(UIMessageUpdatePool);
+                    broadcastToUI(UIMessageUpdatePool);
                     break;
                 case MessageTypeEnum.ADD_EVENT:
                     let newEvent = message.data.event;
@@ -84,7 +99,7 @@ const initSocketServerMessageHandler = ws => {
                     event.set(newEvent.address, newEvent);
                     // event = message.data.event;
 
-                    this.broadcastToUI(UIMessageAddEvent);
+                    broadcastToUI(UIMessageAddEvent);
                     break;
                 case MessageTypeEnum.ACCEPT_EVENT:
                     let eventId = message.data.eventId;
@@ -93,7 +108,7 @@ const initSocketServerMessageHandler = ws => {
                     let thisEvent = event.get(eventId);
                     thisEvent.acceptEvent(publicKey);
 
-                    this.broadcastToUI(UIMessageAcceptEvents);
+                    broadcastToUI(UIMessageAcceptEvents);
                     break;
 
                 case MessageTypeEnum.DISBURSEMENT:
@@ -104,13 +119,13 @@ const initSocketServerMessageHandler = ws => {
                     // pool = message.data.pool;
                     // event = message.data.event;
 
-                    this.broadcastToUI(UIMessageDisbursement);
+                    broadcastToUI(UIMessageDisbursement);
                     break;
                 case MessageTypeEnum.FORCE_END_EVENT:
                     // let currentEvent1 = message.data.curEvent;
                     event.set(message.data.curEvent.address, message.data.curEvent);
 
-                    this.broadcastToUI(UIMessageForceEndEvent(message.data.curEvent.address));
+                    broadcastToUI(UIMessageForceEndEvent(message.data.curEvent.address));
                     break;
                 case MessageTypeEnum.NEW_USER:
                     let newUser = message.data.account;
@@ -137,13 +152,7 @@ const initErrorHandler = ws => {
     ws.on('error', () => closeConnection(ws));
 }
 
-/**
- * 
- * @param {Object} message 
- */
-const broadcastToUI = (message) => {
-    uiSocketServer.send(message);
-}
+
 
 
 /**
@@ -176,6 +185,8 @@ module.exports = {
     initP2PConnect: async (superNodeHttpPort, httpPort) => {
         const addPeer = async (url, superNodeHttpPort, httpPort) => {
             //* Node chính không connect p2p với chính nó
+            console.log("url", url)
+            
             if (superNodeHttpPort === httpPort) {
                 return;
             }
@@ -196,12 +207,16 @@ module.exports = {
         };
 
         const getPeerFromSuperNode = async (superNodeHttpPort) => {
+            console.log("get peer from super node")
             await axios.get(localhost + superNodeHttpPort + '/peers')
                 .then(res => {
+                    console.log(res.data)
                     if (res.status === 200) {
+                        
                         for (let i = 0; i < res.data.length; ++i) {
                             if (res.data[i] !== localhost + httpPort && res.data[i] !== localhost + superNodeHttpPort) {
-                                addPeer(res.data[i]);
+                                console.log(res.data[i]);
+                                addPeer(res.data[i], superNodeHttpPort, httpPort);
                             }
                         }
                     }
